@@ -1,0 +1,11 @@
+{
+  "apiKey": "",
+  "serverUrl": "https://api.anthropic.com",
+  "model": "claude-3.5-mini",
+  "autoSave": true,
+  "enableCodeActions": true,
+  "workspace": {
+    "project": "keyword_txt_generator",
+    "defaultPrompt": "请协助我优化这个 Python 项目中的地区关键词生成逻辑。"
+  }
+}

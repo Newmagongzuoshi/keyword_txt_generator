@@ -58,6 +58,11 @@ python main.py
 已创建：
 - `.vscode/extensions.json`
 - `.vscode/settings.json`
+- `.claude/settings.json`
+
+### `.claude/settings.json` 说明
+
+`.claude/settings.json` 为项目级 Claude 扩展配置文件，适用于你提到的其他项目中 `.claude` 目录结构。该文件可用于存储项目默认提示、模型和 API 端点配置。
 
 ### 建议设置
 
