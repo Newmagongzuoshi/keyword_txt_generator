@@ -1,0 +1,10 @@
+{
+  "claude-vscode.apiKey": "",
+  "claude-vscode.serverUrl": "https://api.anthropic.com",
+  "claude-vscode.model": "claude-3.5-mini",
+  "claude-vscode.enableCodeActions": true,
+  "claude-vscode.scratchpad.autoSave": true,
+  "files.exclude": {
+    "**/__pycache__": true
+  }
+}

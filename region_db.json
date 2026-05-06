@@ -1,0 +1,142 @@
+[
+  {"id":"110000","name":"北京市","short_name":"北京","level":1,"level_name":"省级","type":"municipality","parent_id":"","parent_name":"","parent_chain":[],"aliases":["北京市","北京","中国北京"]},
+  {"id":"110100","name":"北京市","short_name":"北京","level":2,"level_name":"市级","type":"city","parent_id":"110000","parent_name":"北京市","parent_chain":[{"id":"110000","name":"北京市","short_name":"北京","level":1,"level_name":"省级"}],"aliases":["北京市","北京"]},
+  {"id":"110101","name":"东城区","short_name":"东城","level":3,"level_name":"区县级","type":"district","parent_id":"110100","parent_name":"北京市","parent_chain":[{"id":"110000","name":"北京市","short_name":"北京","level":1,"level_name":"省级"},{"id":"110100","name":"北京市","short_name":"北京","level":2,"level_name":"市级"}],"aliases":["东城区","东城","北京东城区","北京市东城区"]},
+  {"id":"110102","name":"西城区","short_name":"西城","level":3,"level_name":"区县级","type":"district","parent_id":"110100","parent_name":"北京市","parent_chain":[{"id":"110000","name":"北京市","short_name":"北京","level":1,"level_name":"省级"},{"id":"110100","name":"北京市","short_name":"北京","level":2,"level_name":"市级"}],"aliases":["西城区","西城","北京西城区","北京市西城区"]},
+  {"id":"110105","name":"朝阳区","short_name":"朝阳","level":3,"level_name":"区县级","type":"district","parent_id":"110100","parent_name":"北京市","parent_chain":[{"id":"110000","name":"北京市","short_name":"北京","level":1,"level_name":"省级"},{"id":"110100","name":"北京市","short_name":"北京","level":2,"level_name":"市级"}],"aliases":["朝阳区","朝阳","北京朝阳区","北京市朝阳区"]},
+  {"id":"110108","name":"海淀区","short_name":"海淀","level":3,"level_name":"区县级","type":"district","parent_id":"110100","parent_name":"北京市","parent_chain":[{"id":"110000","name":"北京市","short_name":"北京","level":1,"level_name":"省级"},{"id":"110100","name":"北京市","short_name":"北京","level":2,"level_name":"市级"}],"aliases":["海淀区","海淀","北京海淀区","北京市海淀区"]},
+  {"id":"110114","name":"昌平区","short_name":"昌平","level":3,"level_name":"区县级","type":"district","parent_id":"110100","parent_name":"北京市","parent_chain":[{"id":"110000","name":"北京市","short_name":"北京","level":1,"level_name":"省级"},{"id":"110100","name":"北京市","short_name":"北京","level":2,"level_name":"市级"}],"aliases":["昌平区","昌平","北京昌平区","北京市昌平区"]},
+
+  {"id":"120000","name":"天津市","short_name":"天津","level":1,"level_name":"省级","type":"municipality","parent_id":"","parent_name":"","parent_chain":[],"aliases":["天津市","天津","中国天津"]},
+  {"id":"120100","name":"天津市","short_name":"天津","level":2,"level_name":"市级","type":"city","parent_id":"120000","parent_name":"天津市","parent_chain":[{"id":"120000","name":"天津市","short_name":"天津","level":1,"level_name":"省级"}],"aliases":["天津市","天津"]},
+
+  {"id":"130000","name":"河北省","short_name":"河北","level":1,"level_name":"省级","type":"province","parent_id":"","parent_name":"","parent_chain":[],"aliases":["河北省","河北","中国河北"]},
+  {"id":"130100","name":"石家庄市","short_name":"石家庄","level":2,"level_name":"市级","type":"city","parent_id":"130000","parent_name":"河北省","parent_chain":[{"id":"130000","name":"河北省","short_name":"河北","level":1,"level_name":"省级"}],"aliases":["石家庄市","石家庄","河北石家庄","河北省石家庄市"]},
+  {"id":"130200","name":"唐山市","short_name":"唐山","level":2,"level_name":"市级","type":"city","parent_id":"130000","parent_name":"河北省","parent_chain":[{"id":"130000","name":"河北省","short_name":"河北","level":1,"level_name":"省级"}],"aliases":["唐山市","唐山","河北唐山","河北省唐山市"]},
+  {"id":"130300","name":"秦皇岛市","short_name":"秦皇岛","level":2,"level_name":"市级","type":"city","parent_id":"130000","parent_name":"河北省","parent_chain":[{"id":"130000","name":"河北省","short_name":"河北","level":1,"level_name":"省级"}],"aliases":["秦皇岛市","秦皇岛","河北秦皇岛","河北省秦皇岛市"]},
+  {"id":"130400","name":"邯郸市","short_name":"邯郸","level":2,"level_name":"市级","type":"city","parent_id":"130000","parent_name":"河北省","parent_chain":[{"id":"130000","name":"河北省","short_name":"河北","level":1,"level_name":"省级"}],"aliases":["邯郸市","邯郸","河北邯郸","河北省邯郸市"]},
+  {"id":"130500","name":"邢台市","short_name":"邢台","level":2,"level_name":"市级","type":"city","parent_id":"130000","parent_name":"河北省","parent_chain":[{"id":"130000","name":"河北省","short_name":"河北","level":1,"level_name":"省级"}],"aliases":["邢台市","邢台","河北邢台","河北省邢台市"]},
+  {"id":"130600","name":"保定市","short_name":"保定","level":2,"level_name":"市级","type":"city","parent_id":"130000","parent_name":"河北省","parent_chain":[{"id":"130000","name":"河北省","short_name":"河北","level":1,"level_name":"省级"}],"aliases":["保定市","保定","河北保定","河北省保定市"]},
+  {"id":"130700","name":"张家口市","short_name":"张家口","level":2,"level_name":"市级","type":"city","parent_id":"130000","parent_name":"河北省","parent_chain":[{"id":"130000","name":"河北省","short_name":"河北","level":1,"level_name":"省级"}],"aliases":["张家口市","张家口","河北张家口","河北省张家口市"]},
+  {"id":"130800","name":"承德市","short_name":"承德","level":2,"level_name":"市级","type":"city","parent_id":"130000","parent_name":"河北省","parent_chain":[{"id":"130000","name":"河北省","short_name":"河北","level":1,"level_name":"省级"}],"aliases":["承德市","承德","河北承德","河北省承德市"]},
+  {"id":"130900","name":"沧州市","short_name":"沧州","level":2,"level_name":"市级","type":"city","parent_id":"130000","parent_name":"河北省","parent_chain":[{"id":"130000","name":"河北省","short_name":"河北","level":1,"level_name":"省级"}],"aliases":["沧州市","沧州","河北沧州","河北省沧州市"]},
+  {"id":"131000","name":"廊坊市","short_name":"廊坊","level":2,"level_name":"市级","type":"city","parent_id":"130000","parent_name":"河北省","parent_chain":[{"id":"130000","name":"河北省","short_name":"河北","level":1,"level_name":"省级"}],"aliases":["廊坊市","廊坊","河北廊坊","河北省廊坊市"]},
+  {"id":"131100","name":"衡水市","short_name":"衡水","level":2,"level_name":"市级","type":"city","parent_id":"130000","parent_name":"河北省","parent_chain":[{"id":"130000","name":"河北省","short_name":"河北","level":1,"level_name":"省级"}],"aliases":["衡水市","衡水","河北衡水","河北省衡水市"]},
+
+  {"id":"140000","name":"山西省","short_name":"山西","level":1,"level_name":"省级","type":"province","parent_id":"","parent_name":"","parent_chain":[],"aliases":["山西省","山西","中国山西"]},
+  {"id":"140100","name":"太原市","short_name":"太原","level":2,"level_name":"市级","type":"city","parent_id":"140000","parent_name":"山西省","parent_chain":[{"id":"140000","name":"山西省","short_name":"山西","level":1,"level_name":"省级"}],"aliases":["太原市","太原","山西太原","山西省太原市"]},
+  {"id":"140200","name":"大同市","short_name":"大同","level":2,"level_name":"市级","type":"city","parent_id":"140000","parent_name":"山西省","parent_chain":[{"id":"140000","name":"山西省","short_name":"山西","level":1,"level_name":"省级"}],"aliases":["大同市","大同","山西大同","山西省大同市"]},
+
+  {"id":"150000","name":"内蒙古自治区","short_name":"内蒙古","level":1,"level_name":"省级","type":"autonomous_region","parent_id":"","parent_name":"","parent_chain":[],"aliases":["内蒙古自治区","内蒙古","中国内蒙古"]},
+  {"id":"150100","name":"呼和浩特市","short_name":"呼和浩特","level":2,"level_name":"市级","type":"city","parent_id":"150000","parent_name":"内蒙古自治区","parent_chain":[{"id":"150000","name":"内蒙古自治区","short_name":"内蒙古","level":1,"level_name":"省级"}],"aliases":["呼和浩特市","呼和浩特","内蒙古呼和浩特","内蒙古自治区呼和浩特市"]},
+
+  {"id":"210000","name":"辽宁省","short_name":"辽宁","level":1,"level_name":"省级","type":"province","parent_id":"","parent_name":"","parent_chain":[],"aliases":["辽宁省","辽宁","中国辽宁"]},
+  {"id":"210100","name":"沈阳市","short_name":"沈阳","level":2,"level_name":"市级","type":"city","parent_id":"210000","parent_name":"辽宁省","parent_chain":[{"id":"210000","name":"辽宁省","short_name":"辽宁","level":1,"level_name":"省级"}],"aliases":["沈阳市","沈阳","辽宁沈阳","辽宁省沈阳市"]},
+  {"id":"210200","name":"大连市","short_name":"大连","level":2,"level_name":"市级","type":"city","parent_id":"210000","parent_name":"辽宁省","parent_chain":[{"id":"210000","name":"辽宁省","short_name":"辽宁","level":1,"level_name":"省级"}],"aliases":["大连市","大连","辽宁大连","辽宁省大连市"]},
+
+  {"id":"220000","name":"吉林省","short_name":"吉林","level":1,"level_name":"省级","type":"province","parent_id":"","parent_name":"","parent_chain":[],"aliases":["吉林省","吉林","中国吉林"]},
+  {"id":"220100","name":"长春市","short_name":"长春","level":2,"level_name":"市级","type":"city","parent_id":"220000","parent_name":"吉林省","parent_chain":[{"id":"220000","name":"吉林省","short_name":"吉林","level":1,"level_name":"省级"}],"aliases":["长春市","长春","吉林长春","吉林省长春市"]},
+  {"id":"222400","name":"延边朝鲜族自治州","short_name":"延边","level":2,"level_name":"市级","type":"autonomous_prefecture","parent_id":"220000","parent_name":"吉林省","parent_chain":[{"id":"220000","name":"吉林省","short_name":"吉林","level":1,"level_name":"省级"}],"aliases":["延边朝鲜族自治州","延边","延边州","吉林延边","吉林省延边朝鲜族自治州"]},
+  {"id":"222404","name":"珲春市","short_name":"珲春","level":3,"level_name":"区县级","type":"county_city","parent_id":"222400","parent_name":"延边朝鲜族自治州","parent_chain":[{"id":"220000","name":"吉林省","short_name":"吉林","level":1,"level_name":"省级"},{"id":"222400","name":"延边朝鲜族自治州","short_name":"延边","level":2,"level_name":"市级"}],"aliases":["珲春市","珲春","延边珲春市","延边珲春","吉林珲春","吉林省延边朝鲜族自治州珲春市"]},
+
+  {"id":"230000","name":"黑龙江省","short_name":"黑龙江","level":1,"level_name":"省级","type":"province","parent_id":"","parent_name":"","parent_chain":[],"aliases":["黑龙江省","黑龙江","中国黑龙江"]},
+  {"id":"230100","name":"哈尔滨市","short_name":"哈尔滨","level":2,"level_name":"市级","type":"city","parent_id":"230000","parent_name":"黑龙江省","parent_chain":[{"id":"230000","name":"黑龙江省","short_name":"黑龙江","level":1,"level_name":"省级"}],"aliases":["哈尔滨市","哈尔滨","黑龙江哈尔滨","黑龙江省哈尔滨市"]},
+
+  {"id":"310000","name":"上海市","short_name":"上海","level":1,"level_name":"省级","type":"municipality","parent_id":"","parent_name":"","parent_chain":[],"aliases":["上海市","上海","中国上海"]},
+  {"id":"310100","name":"上海市","short_name":"上海","level":2,"level_name":"市级","type":"city","parent_id":"310000","parent_name":"上海市","parent_chain":[{"id":"310000","name":"上海市","short_name":"上海","level":1,"level_name":"省级"}],"aliases":["上海市","上海"]},
+  {"id":"310115","name":"浦东新区","short_name":"浦东","level":3,"level_name":"区县级","type":"new_area","parent_id":"310100","parent_name":"上海市","parent_chain":[{"id":"310000","name":"上海市","short_name":"上海","level":1,"level_name":"省级"},{"id":"310100","name":"上海市","short_name":"上海","level":2,"level_name":"市级"}],"aliases":["浦东新区","浦东","上海浦东新区","上海市浦东新区","上海浦东","浦东"]},
+
+  {"id":"320000","name":"江苏省","short_name":"江苏","level":1,"level_name":"省级","type":"province","parent_id":"","parent_name":"","parent_chain":[],"aliases":["江苏省","江苏","中国江苏"]},
+  {"id":"320100","name":"南京市","short_name":"南京","level":2,"level_name":"市级","type":"city","parent_id":"320000","parent_name":"江苏省","parent_chain":[{"id":"320000","name":"江苏省","short_name":"江苏","level":1,"level_name":"省级"}],"aliases":["南京市","南京","江苏南京","江苏省南京市"]},
+  {"id":"320200","name":"无锡市","short_name":"无锡","level":2,"level_name":"市级","type":"city","parent_id":"320000","parent_name":"江苏省","parent_chain":[{"id":"320000","name":"江苏省","short_name":"江苏","level":1,"level_name":"省级"}],"aliases":["无锡市","无锡","江苏无锡","江苏省无锡市"]},
+  {"id":"320500","name":"苏州市","short_name":"苏州","level":2,"level_name":"市级","type":"city","parent_id":"320000","parent_name":"江苏省","parent_chain":[{"id":"320000","name":"江苏省","short_name":"江苏","level":1,"level_name":"省级"}],"aliases":["苏州市","苏州","江苏苏州","江苏省苏州市"]},
+
+  {"id":"330000","name":"浙江省","short_name":"浙江","level":1,"level_name":"省级","type":"province","parent_id":"","parent_name":"","parent_chain":[],"aliases":["浙江省","浙江","中国浙江"]},
+  {"id":"330100","name":"杭州市","short_name":"杭州","level":2,"level_name":"市级","type":"city","parent_id":"330000","parent_name":"浙江省","parent_chain":[{"id":"330000","name":"浙江省","short_name":"浙江","level":1,"level_name":"省级"}],"aliases":["杭州市","杭州","浙江杭州","浙江省杭州市","浙江杭州市"]},
+  {"id":"330102","name":"上城区","short_name":"上城","level":3,"level_name":"区县级","type":"district","parent_id":"330100","parent_name":"杭州市","parent_chain":[{"id":"330000","name":"浙江省","short_name":"浙江","level":1,"level_name":"省级"},{"id":"330100","name":"杭州市","short_name":"杭州","level":2,"level_name":"市级"}],"aliases":["上城区","上城","杭州上城区","杭州市上城区","浙江杭州上城区","浙江省杭州市上城区"]},
+  {"id":"330106","name":"西湖区","short_name":"西湖","level":3,"level_name":"区县级","type":"district","parent_id":"330100","parent_name":"杭州市","parent_chain":[{"id":"330000","name":"浙江省","short_name":"浙江","level":1,"level_name":"省级"},{"id":"330100","name":"杭州市","short_name":"杭州","level":2,"level_name":"市级"}],"aliases":["西湖区","西湖","杭州西湖区","杭州市西湖区"]},
+  {"id":"330110","name":"余杭区","short_name":"余杭","level":3,"level_name":"区县级","type":"district","parent_id":"330100","parent_name":"杭州市","parent_chain":[{"id":"330000","name":"浙江省","short_name":"浙江","level":1,"level_name":"省级"},{"id":"330100","name":"杭州市","short_name":"杭州","level":2,"level_name":"市级"}],"aliases":["余杭区","余杭","杭州余杭区","杭州市余杭区"]},
+  {"id":"330200","name":"宁波市","short_name":"宁波","level":2,"level_name":"市级","type":"city","parent_id":"330000","parent_name":"浙江省","parent_chain":[{"id":"330000","name":"浙江省","short_name":"浙江","level":1,"level_name":"省级"}],"aliases":["宁波市","宁波","浙江宁波","浙江省宁波市"]},
+  {"id":"330300","name":"温州市","short_name":"温州","level":2,"level_name":"市级","type":"city","parent_id":"330000","parent_name":"浙江省","parent_chain":[{"id":"330000","name":"浙江省","short_name":"浙江","level":1,"level_name":"省级"}],"aliases":["温州市","温州","浙江温州","浙江省温州市"]},
+  {"id":"330383","name":"龙港市","short_name":"龙港","level":3,"level_name":"区县级","type":"county_city","parent_id":"330300","parent_name":"温州市","parent_chain":[{"id":"330000","name":"浙江省","short_name":"浙江","level":1,"level_name":"省级"},{"id":"330300","name":"温州市","short_name":"温州","level":2,"level_name":"市级"}],"aliases":["龙港市","龙港","温州龙港市","温州市龙港市","浙江温州龙港市","浙江省温州市龙港市"]},
+
+  {"id":"340000","name":"安徽省","short_name":"安徽","level":1,"level_name":"省级","type":"province","parent_id":"","parent_name":"","parent_chain":[],"aliases":["安徽省","安徽","中国安徽"]},
+  {"id":"340100","name":"合肥市","short_name":"合肥","level":2,"level_name":"市级","type":"city","parent_id":"340000","parent_name":"安徽省","parent_chain":[{"id":"340000","name":"安徽省","short_name":"安徽","level":1,"level_name":"省级"}],"aliases":["合肥市","合肥","安徽合肥","安徽省合肥市"]},
+
+  {"id":"350000","name":"福建省","short_name":"福建","level":1,"level_name":"省级","type":"province","parent_id":"","parent_name":"","parent_chain":[],"aliases":["福建省","福建","中国福建"]},
+  {"id":"350100","name":"福州市","short_name":"福州","level":2,"level_name":"市级","type":"city","parent_id":"350000","parent_name":"福建省","parent_chain":[{"id":"350000","name":"福建省","short_name":"福建","level":1,"level_name":"省级"}],"aliases":["福州市","福州","福建福州","福建省福州市"]},
+  {"id":"350200","name":"厦门市","short_name":"厦门","level":2,"level_name":"市级","type":"city","parent_id":"350000","parent_name":"福建省","parent_chain":[{"id":"350000","name":"福建省","short_name":"福建","level":1,"level_name":"省级"}],"aliases":["厦门市","厦门","福建厦门","福建省厦门市"]},
+
+  {"id":"360000","name":"江西省","short_name":"江西","level":1,"level_name":"省级","type":"province","parent_id":"","parent_name":"","parent_chain":[],"aliases":["江西省","江西","中国江西"]},
+  {"id":"360100","name":"南昌市","short_name":"南昌","level":2,"level_name":"市级","type":"city","parent_id":"360000","parent_name":"江西省","parent_chain":[{"id":"360000","name":"江西省","short_name":"江西","level":1,"level_name":"省级"}],"aliases":["南昌市","南昌","江西南昌","江西省南昌市"]},
+  {"id":"361100","name":"上饶市","short_name":"上饶","level":2,"level_name":"市级","type":"city","parent_id":"360000","parent_name":"江西省","parent_chain":[{"id":"360000","name":"江西省","short_name":"江西","level":1,"level_name":"省级"}],"aliases":["上饶市","上饶","江西上饶","江西省上饶市"]},
+  {"id":"361128","name":"鄱阳县","short_name":"鄱阳","level":3,"level_name":"区县级","type":"county","parent_id":"361100","parent_name":"上饶市","parent_chain":[{"id":"360000","name":"江西省","short_name":"江西","level":1,"level_name":"省级"},{"id":"361100","name":"上饶市","short_name":"上饶","level":2,"level_name":"市级"}],"aliases":["鄱阳县","鄱阳","上饶鄱阳县","上饶鄱阳","上饶市鄱阳县","江西上饶鄱阳县"]},
+
+  {"id":"370000","name":"山东省","short_name":"山东","level":1,"level_name":"省级","type":"province","parent_id":"","parent_name":"","parent_chain":[],"aliases":["山东省","山东","中国山东"]},
+  {"id":"370100","name":"济南市","short_name":"济南","level":2,"level_name":"市级","type":"city","parent_id":"370000","parent_name":"山东省","parent_chain":[{"id":"370000","name":"山东省","short_name":"山东","level":1,"level_name":"省级"}],"aliases":["济南市","济南","山东济南","山东省济南市"]},
+  {"id":"370200","name":"青岛市","short_name":"青岛","level":2,"level_name":"市级","type":"city","parent_id":"370000","parent_name":"山东省","parent_chain":[{"id":"370000","name":"山东省","short_name":"山东","level":1,"level_name":"省级"}],"aliases":["青岛市","青岛","山东青岛","山东省青岛市"]},
+
+  {"id":"410000","name":"河南省","short_name":"河南","level":1,"level_name":"省级","type":"province","parent_id":"","parent_name":"","parent_chain":[],"aliases":["河南省","河南","中国河南"]},
+  {"id":"410100","name":"郑州市","short_name":"郑州","level":2,"level_name":"市级","type":"city","parent_id":"410000","parent_name":"河南省","parent_chain":[{"id":"410000","name":"河南省","short_name":"河南","level":1,"level_name":"省级"}],"aliases":["郑州市","郑州","河南郑州","河南省郑州市"]},
+
+  {"id":"420000","name":"湖北省","short_name":"湖北","level":1,"level_name":"省级","type":"province","parent_id":"","parent_name":"","parent_chain":[],"aliases":["湖北省","湖北","中国湖北"]},
+  {"id":"420100","name":"武汉市","short_name":"武汉","level":2,"level_name":"市级","type":"city","parent_id":"420000","parent_name":"湖北省","parent_chain":[{"id":"420000","name":"湖北省","short_name":"湖北","level":1,"level_name":"省级"}],"aliases":["武汉市","武汉","湖北武汉","湖北省武汉市"]},
+  {"id":"420500","name":"宜昌市","short_name":"宜昌","level":2,"level_name":"市级","type":"city","parent_id":"420000","parent_name":"湖北省","parent_chain":[{"id":"420000","name":"湖北省","short_name":"湖北","level":1,"level_name":"省级"}],"aliases":["宜昌市","宜昌","湖北宜昌","湖北省宜昌市"]},
+  {"id":"429021","name":"神农架林区","short_name":"神农架","level":3,"level_name":"区县级","type":"forestry","parent_id":"420000","parent_name":"湖北省","parent_chain":[{"id":"420000","name":"湖北省","short_name":"湖北","level":1,"level_name":"省级"}],"aliases":["神农架林区","神农架","湖北神农架林区","湖北省神农架林区","神农架"]},
+
+  {"id":"430000","name":"湖南省","short_name":"湖南","level":1,"level_name":"省级","type":"province","parent_id":"","parent_name":"","parent_chain":[],"aliases":["湖南省","湖南","中国湖南"]},
+  {"id":"430100","name":"长沙市","short_name":"长沙","level":2,"level_name":"市级","type":"city","parent_id":"430000","parent_name":"湖南省","parent_chain":[{"id":"430000","name":"湖南省","short_name":"湖南","level":1,"level_name":"省级"}],"aliases":["长沙市","长沙","湖南长沙","湖南省长沙市"]},
+
+  {"id":"440000","name":"广东省","short_name":"广东","level":1,"level_name":"省级","type":"province","parent_id":"","parent_name":"","parent_chain":[],"aliases":["广东省","广东","中国广东"]},
+  {"id":"440100","name":"广州市","short_name":"广州","level":2,"level_name":"市级","type":"city","parent_id":"440000","parent_name":"广东省","parent_chain":[{"id":"440000","name":"广东省","short_name":"广东","level":1,"level_name":"省级"}],"aliases":["广州市","广州","广东广州","广东省广州市"]},
+  {"id":"440300","name":"深圳市","short_name":"深圳","level":2,"level_name":"市级","type":"city","parent_id":"440000","parent_name":"广东省","parent_chain":[{"id":"440000","name":"广东省","short_name":"广东","level":1,"level_name":"省级"}],"aliases":["深圳市","深圳","广东深圳","广东省深圳市"]},
+  {"id":"441900","name":"东莞市","short_name":"东莞","level":2,"level_name":"市级","type":"city","parent_id":"440000","parent_name":"广东省","parent_chain":[{"id":"440000","name":"广东省","short_name":"广东","level":1,"level_name":"省级"}],"aliases":["东莞市","东莞","广东东莞","广东省东莞市"]},
+
+  {"id":"450000","name":"广西壮族自治区","short_name":"广西","level":1,"level_name":"省级","type":"autonomous_region","parent_id":"","parent_name":"","parent_chain":[],"aliases":["广西壮族自治区","广西","中国广西"]},
+  {"id":"450100","name":"南宁市","short_name":"南宁","level":2,"level_name":"市级","type":"city","parent_id":"450000","parent_name":"广西壮族自治区","parent_chain":[{"id":"450000","name":"广西壮族自治区","short_name":"广西","level":1,"level_name":"省级"}],"aliases":["南宁市","南宁","广西南宁","广西壮族自治区南宁市"]},
+
+  {"id":"460000","name":"海南省","short_name":"海南","level":1,"level_name":"省级","type":"province","parent_id":"","parent_name":"","parent_chain":[],"aliases":["海南省","海南","中国海南"]},
+  {"id":"460100","name":"海口市","short_name":"海口","level":2,"level_name":"市级","type":"city","parent_id":"460000","parent_name":"海南省","parent_chain":[{"id":"460000","name":"海南省","short_name":"海南","level":1,"level_name":"省级"}],"aliases":["海口市","海口","海南海口","海南省海口市"]},
+  {"id":"460200","name":"三亚市","short_name":"三亚","level":2,"level_name":"市级","type":"city","parent_id":"460000","parent_name":"海南省","parent_chain":[{"id":"460000","name":"海南省","short_name":"海南","level":1,"level_name":"省级"}],"aliases":["三亚市","三亚","海南三亚","海南省三亚市"]},
+
+  {"id":"500000","name":"重庆市","short_name":"重庆","level":1,"level_name":"省级","type":"municipality","parent_id":"","parent_name":"","parent_chain":[],"aliases":["重庆市","重庆","中国重庆"]},
+  {"id":"500100","name":"重庆市","short_name":"重庆","level":2,"level_name":"市级","type":"city","parent_id":"500000","parent_name":"重庆市","parent_chain":[{"id":"500000","name":"重庆市","short_name":"重庆","level":1,"level_name":"省级"}],"aliases":["重庆市","重庆"]},
+  {"id":"500101","name":"万州区","short_name":"万州","level":3,"level_name":"区县级","type":"district","parent_id":"500100","parent_name":"重庆市","parent_chain":[{"id":"500000","name":"重庆市","short_name":"重庆","level":1,"level_name":"省级"},{"id":"500100","name":"重庆市","short_name":"重庆","level":2,"level_name":"市级"}],"aliases":["万州区","万州","重庆万州区","重庆市万州区","重庆万州"]},
+
+  {"id":"510000","name":"四川省","short_name":"四川","level":1,"level_name":"省级","type":"province","parent_id":"","parent_name":"","parent_chain":[],"aliases":["四川省","四川","中国四川"]},
+  {"id":"510100","name":"成都市","short_name":"成都","level":2,"level_name":"市级","type":"city","parent_id":"510000","parent_name":"四川省","parent_chain":[{"id":"510000","name":"四川省","short_name":"四川","level":1,"level_name":"省级"}],"aliases":["成都市","成都","四川成都","四川省成都市"]},
+
+  {"id":"520000","name":"贵州省","short_name":"贵州","level":1,"level_name":"省级","type":"province","parent_id":"","parent_name":"","parent_chain":[],"aliases":["贵州省","贵州","中国贵州"]},
+  {"id":"520100","name":"贵阳市","short_name":"贵阳","level":2,"level_name":"市级","type":"city","parent_id":"520000","parent_name":"贵州省","parent_chain":[{"id":"520000","name":"贵州省","short_name":"贵州","level":1,"level_name":"省级"}],"aliases":["贵阳市","贵阳","贵州贵阳","贵州省贵阳市"]},
+  {"id":"520300","name":"遵义市","short_name":"遵义","level":2,"level_name":"市级","type":"city","parent_id":"520000","parent_name":"贵州省","parent_chain":[{"id":"520000","name":"贵州省","short_name":"贵州","level":1,"level_name":"省级"}],"aliases":["遵义市","遵义","贵州遵义","贵州省遵义市"]},
+  {"id":"520324","name":"正安县","short_name":"正安","level":3,"level_name":"区县级","type":"county","parent_id":"520300","parent_name":"遵义市","parent_chain":[{"id":"520000","name":"贵州省","short_name":"贵州","level":1,"level_name":"省级"},{"id":"520300","name":"遵义市","short_name":"遵义","level":2,"level_name":"市级"}],"aliases":["正安县","正安","遵义正安县","遵义正安","遵义市正安县","贵州正安县","贵州省遵义市正安县"]},
+
+  {"id":"530000","name":"云南省","short_name":"云南","level":1,"level_name":"省级","type":"province","parent_id":"","parent_name":"","parent_chain":[],"aliases":["云南省","云南","中国云南"]},
+  {"id":"530100","name":"昆明市","short_name":"昆明","level":2,"level_name":"市级","type":"city","parent_id":"530000","parent_name":"云南省","parent_chain":[{"id":"530000","name":"云南省","short_name":"云南","level":1,"level_name":"省级"}],"aliases":["昆明市","昆明","云南昆明","云南省昆明市"]},
+
+  {"id":"540000","name":"西藏自治区","short_name":"西藏","level":1,"level_name":"省级","type":"autonomous_region","parent_id":"","parent_name":"","parent_chain":[],"aliases":["西藏自治区","西藏","中国西藏"]},
+  {"id":"540100","name":"拉萨市","short_name":"拉萨","level":2,"level_name":"市级","type":"city","parent_id":"540000","parent_name":"西藏自治区","parent_chain":[{"id":"540000","name":"西藏自治区","short_name":"西藏","level":1,"level_name":"省级"}],"aliases":["拉萨市","拉萨","西藏拉萨","西藏自治区拉萨市"]},
+
+  {"id":"610000","name":"陕西省","short_name":"陕西","level":1,"level_name":"省级","type":"province","parent_id":"","parent_name":"","parent_chain":[],"aliases":["陕西省","陕西","中国陕西"]},
+  {"id":"610100","name":"西安市","short_name":"西安","level":2,"level_name":"市级","type":"city","parent_id":"610000","parent_name":"陕西省","parent_chain":[{"id":"610000","name":"陕西省","short_name":"陕西","level":1,"level_name":"省级"}],"aliases":["西安市","西安","陕西西安","陕西省西安市"]},
+
+  {"id":"620000","name":"甘肃省","short_name":"甘肃","level":1,"level_name":"省级","type":"province","parent_id":"","parent_name":"","parent_chain":[],"aliases":["甘肃省","甘肃","中国甘肃"]},
+  {"id":"620100","name":"兰州市","short_name":"兰州","level":2,"level_name":"市级","type":"city","parent_id":"620000","parent_name":"甘肃省","parent_chain":[{"id":"620000","name":"甘肃省","short_name":"甘肃","level":1,"level_name":"省级"}],"aliases":["兰州市","兰州","甘肃兰州","甘肃省兰州市"]},
+
+  {"id":"630000","name":"青海省","short_name":"青海","level":1,"level_name":"省级","type":"province","parent_id":"","parent_name":"","parent_chain":[],"aliases":["青海省","青海","中国青海"]},
+  {"id":"630100","name":"西宁市","short_name":"西宁","level":2,"level_name":"市级","type":"city","parent_id":"630000","parent_name":"青海省","parent_chain":[{"id":"630000","name":"青海省","short_name":"青海","level":1,"level_name":"省级"}],"aliases":["西宁市","西宁","青海西宁","青海省西宁市"]},
+  {"id":"632800","name":"海西蒙古族藏族自治州","short_name":"海西","level":2,"level_name":"市级","type":"autonomous_prefecture","parent_id":"630000","parent_name":"青海省","parent_chain":[{"id":"630000","name":"青海省","short_name":"青海","level":1,"level_name":"省级"}],"aliases":["海西蒙古族藏族自治州","海西","海西州","青海海西","青海省海西蒙古族藏族自治州"]},
+  {"id":"632823","name":"天峻县","short_name":"天峻","level":3,"level_name":"区县级","type":"county","parent_id":"632800","parent_name":"海西蒙古族藏族自治州","parent_chain":[{"id":"630000","name":"青海省","short_name":"青海","level":1,"level_name":"省级"},{"id":"632800","name":"海西蒙古族藏族自治州","short_name":"海西","level":2,"level_name":"市级"}],"aliases":["天峻县","天峻","海西天峻县","海西天峻","青海天峻县","海西蒙古族藏族自治州天峻县"]},
+
+  {"id":"640000","name":"宁夏回族自治区","short_name":"宁夏","level":1,"level_name":"省级","type":"autonomous_region","parent_id":"","parent_name":"","parent_chain":[],"aliases":["宁夏回族自治区","宁夏","中国宁夏"]},
+  {"id":"640100","name":"银川市","short_name":"银川","level":2,"level_name":"市级","type":"city","parent_id":"640000","parent_name":"宁夏回族自治区","parent_chain":[{"id":"640000","name":"宁夏回族自治区","short_name":"宁夏","level":1,"level_name":"省级"}],"aliases":["银川市","银川","宁夏银川","宁夏回族自治区银川市"]},
+
+  {"id":"650000","name":"新疆维吾尔自治区","short_name":"新疆","level":1,"level_name":"省级","type":"autonomous_region","parent_id":"","parent_name":"","parent_chain":[],"aliases":["新疆维吾尔自治区","新疆","中国新疆"]},
+  {"id":"650100","name":"乌鲁木齐市","short_name":"乌鲁木齐","level":2,"level_name":"市级","type":"city","parent_id":"650000","parent_name":"新疆维吾尔自治区","parent_chain":[{"id":"650000","name":"新疆维吾尔自治区","short_name":"新疆","level":1,"level_name":"省级"}],"aliases":["乌鲁木齐市","乌鲁木齐","新疆乌鲁木齐","新疆维吾尔自治区乌鲁木齐市"]},
+
+  {"id":"710000","name":"台湾省","short_name":"台湾","level":1,"level_name":"省级","type":"province","parent_id":"","parent_name":"","parent_chain":[],"aliases":["台湾省","台湾","中国台湾"]},
+
+  {"id":"810000","name":"香港特别行政区","short_name":"香港","level":1,"level_name":"省级","type":"sar","parent_id":"","parent_name":"","parent_chain":[],"aliases":["香港特别行政区","香港","中国香港"]},
+
+  {"id":"820000","name":"澳门特别行政区","short_name":"澳门","level":1,"level_name":"省级","type":"sar","parent_id":"","parent_name":"","parent_chain":[],"aliases":["澳门特别行政区","澳门","中国澳门"]}
+]
