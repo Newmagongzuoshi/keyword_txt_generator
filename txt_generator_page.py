@@ -15,8 +15,11 @@ class TxtGeneratorPage(ttk.Frame):
         self.target_length = tk.StringVar(value="500")
         self.extract_mode = tk.StringVar(value="优先提取")
         self.target_level = tk.StringVar(value="区县级")
+        self.smart_mode = tk.BooleanVar(value=True)  # 智能模式默认启用
         self._building = False
         self._setup_ui()
+        # 初始化智能模式状态
+        self._on_smart_mode_toggle()
 
     def _setup_ui(self):
         main = ttk.Frame(self, padding=10)
@@ -51,10 +54,12 @@ class TxtGeneratorPage(ttk.Frame):
         cb_mode = ttk.Combobox(row4, textvariable=self.extract_mode,
                                values=["优先提取", "强制提取"], state="readonly", width=12)
         cb_mode.pack(side=tk.LEFT, padx=5)
-        ttk.Label(row4, text="目标层级：").pack(side=tk.LEFT, padx=(20, 5))
-        cb_level = ttk.Combobox(row4, textvariable=self.target_level,
-                                values=LEVEL_ORDER, state="readonly", width=12)
-        cb_level.pack(side=tk.LEFT)
+        ttk.Checkbutton(row4, text="智能模式", variable=self.smart_mode,
+                        command=self._on_smart_mode_toggle).pack(side=tk.LEFT, padx=(20, 5))
+        ttk.Label(row4, text="目标层级：").pack(side=tk.LEFT, padx=(10, 5))
+        self.cb_level = ttk.Combobox(row4, textvariable=self.target_level,
+                                     values=LEVEL_ORDER, state="readonly", width=12)
+        self.cb_level.pack(side=tk.LEFT)
 
         row5 = ttk.Frame(main)
         row5.pack(fill=tk.X, pady=3)
@@ -83,10 +88,22 @@ class TxtGeneratorPage(ttk.Frame):
         folder = filedialog.askdirectory(title="选择 MP4 文件夹")
         if folder:
             self.mp4_folder.set(folder)
-            self._analyze_mp4_files(folder)
+            if self.smart_mode.get():
+                self._analyze_mp4_files(folder)
+
+    def _on_smart_mode_toggle(self):
+        """智能模式切换处理"""
+        if self.smart_mode.get():
+            # 启用智能模式：禁用手动选择，自动分析
+            self.cb_level.config(state="disabled")
+            if self.mp4_folder.get():
+                self._analyze_mp4_files(self.mp4_folder.get())
+        else:
+            # 关闭智能模式：启用手动选择
+            self.cb_level.config(state="readonly")
 
     def _analyze_mp4_files(self, folder):
-        """分析文件夹中的MP4文件，统计地区层级分布，设置默认目标层级"""
+        """智能分析文件夹中的MP4文件，找到每个文件的最低层级地区，设置默认目标层级"""
         import os
         from pathlib import Path
         from collections import Counter
@@ -104,43 +121,45 @@ class TxtGeneratorPage(ttk.Frame):
         if not mp4_files:
             return
 
-        # 统计各层级出现次数
-        level_counts = Counter()
+        # 统计每个文件的最低层级
+        lowest_levels = Counter()
         sample_size = min(50, len(mp4_files))  # 最多分析50个文件作为样本
 
         for filename in mp4_files[:sample_size]:
-            # 对每个文件名尝试提取所有层级
-            for level in [1, 2, 3, 4, 5]:  # 省级到村级
-                try:
-                    result = extractor.extract(filename, mode="priority", target_level=level)
-                    if result and result.get("success") and not result.get("is_fallback"):
-                        level_counts[level] += 1
-                except:
-                    continue
+            # 获取文件中的所有匹配候选者，找到最低层级
+            try:
+                candidates = extractor.get_all_candidates(filename)
+                if candidates:
+                    # 找到所有候选者中的最低层级（数字最大的层级）
+                    lowest_level = max(c["level"] for c in candidates)
+                    lowest_levels[lowest_level] += 1
+            except Exception as e:
+                # 如果分析失败，跳过这个文件
+                continue
 
-        if not level_counts:
+        if not lowest_levels:
             return
 
-        # 找到出现最多的层级
-        most_common_level = level_counts.most_common(1)[0][0]
+        # 找到最常见的最低层级
+        most_common_lowest_level = lowest_levels.most_common(1)[0][0]
         level_name_map = {1: "省级", 2: "市级", 3: "区县级", 4: "乡镇街道级", 5: "村社区级"}
-        default_level_name = level_name_map.get(most_common_level, "区县级")
+        default_level_name = level_name_map.get(most_common_lowest_level, "区县级")
 
         # 设置默认值
         self.target_level.set(default_level_name)
 
         # 显示统计信息（如果日志区域已初始化）
-        total_analyzed = sum(level_counts.values())
+        total_analyzed = sum(lowest_levels.values())
         if total_analyzed > 0:
             level_distribution = ", ".join([
                 f"{level_name_map[l]}: {count}"
-                for l, count in sorted(level_counts.items())
+                for l, count in sorted(lowest_levels.items())
             ])
             try:
-                self._log(f"文件夹分析完成：共 {len(mp4_files)} 个MP4文件，"
+                self._log(f"智能分析完成：共 {len(mp4_files)} 个MP4文件，"
                          f"分析了 {sample_size} 个样本，"
-                         f"地区层级分布：{level_distribution}，"
-                         f"默认选择：{default_level_name}")
+                         f"各文件最低层级分布：{level_distribution}，"
+                         f"智能选择：{default_level_name}")
             except:
                 # 如果日志区域还没准备好，静默跳过
                 pass

@@ -72,6 +72,7 @@ class RegionExtractor:
                     with open(cache_path, "rb") as f:
                         extractor = pickle.load(f)
                     extractor.region_db = region_db
+                    # 重新初始化缓存，避免pickle序列化问题
                     extractor.normalize_cache = {}
                     extractor.extract_cache = {}
                     return extractor
@@ -97,6 +98,14 @@ class RegionExtractor:
                 name = name.strip()
                 if name:
                     self.trie.insert(name, region)
+
+    def normalize_filename_cached(self, filename):
+        """带缓存的文件名规范化"""
+        if filename in self.normalize_cache:
+            return self.normalize_cache[filename]
+        result = self.normalize_filename(filename)
+        self.normalize_cache[filename] = result
+        return result
 
     def normalize_filename(self, filename):
         stem = Path(filename).stem
@@ -125,12 +134,12 @@ class RegionExtractor:
 
         return text.strip()
 
-    def normalize_filename_cached(self, filename):
-        if filename in self.normalize_cache:
-            return self.normalize_cache[filename]
-        result = self.normalize_filename(filename)
-        self.normalize_cache[filename] = result
-        return result
+    def get_all_candidates(self, filename):
+        """获取文件名中的所有地区候选者，用于智能模式分析"""
+        clean_text = self.normalize_filename_cached(filename)
+        candidates = self.match_regions(clean_text)
+        candidates = self.filter_invalid_candidates(candidates)
+        return candidates
 
     def _is_direct_name(self, match):
         r = match["region"]
@@ -205,7 +214,11 @@ class RegionExtractor:
             and c["matched_text"] not in INVALID_TAIL_WORDS
         ]
 
-    def select_by_priority(self, candidates, target_level):
+    def get_all_candidates(self, filename):
+        """获取文件名中的所有地区候选者，用于分析最低层级"""
+        clean_text = self.normalize_filename_cached(filename)
+        raw_candidates = self.match_regions(clean_text)
+        return self.filter_invalid_candidates(raw_candidates)
         exact = [c for c in candidates if c["level"] == target_level]
         if exact:
             return self._choose_best(exact, target_level)
@@ -274,6 +287,40 @@ class RegionExtractor:
         candidates.sort(key=lambda c: (c["level"] != target_level, c["start"]))
         best = candidates[0]
         best["reason"] = f"成功提取{best['level_name']}地区：{best['name']}"
+        return best
+
+    def select_by_priority(self, candidates, target_level):
+        level_name_map = {
+            1: "省级", 2: "市级", 3: "区县级", 4: "乡镇街道级", 5: "村社区级"
+        }
+        target_level_name = level_name_map.get(target_level, "目标级别")
+
+        exact = [c for c in candidates if c["level"] == target_level]
+        if exact:
+            return self._choose_best(exact, target_level)
+
+        upper = [c for c in candidates if c["level"] < target_level]
+        if upper:
+            best = max(upper, key=lambda c: c["level"])
+            best["is_fallback"] = True
+            best["reason"] = (
+                f"未找到{target_level_name}级地区，降级为{best['level_name']}：{best['name']}"
+            )
+            return best
+
+        lower = [c for c in candidates if c["level"] > target_level]
+        if lower:
+            best = self._choose_most_specific(lower)
+            best["is_fallback"] = True
+            best["reason"] = (
+                f"未找到{target_level_name}级地区，已使用更具体匹配：{best['name']}"
+            )
+            return best
+
+        best = self._choose_most_specific(candidates)
+        if best is not None:
+            best["is_fallback"] = True
+            best["reason"] = f"未找到目标层级，使用最佳匹配：{best['name']}"
         return best
 
     def _choose_most_specific(self, candidates):
