@@ -1,4 +1,5 @@
 import json
+import pickle
 from pathlib import Path
 
 from config import LEVEL_PROVINCE, LEVEL_CITY, LEVEL_COUNTY, LEVEL_TOWN, LEVEL_VILLAGE
@@ -17,17 +18,43 @@ class RegionDatabase:
             LEVEL_VILLAGE: [],
         }
         self.parent_children_index = {}
+        self.source_path = None
+        self.cache_path = None
 
     @classmethod
-    def load(cls, path="region_db.json"):
+    def load(cls, path="region_db.json", cache_path=None):
         db_path = Path(path)
         if not db_path.is_absolute():
             db_path = Path(__file__).parent / path
+
+        if cache_path is None:
+            cache_path = db_path.with_suffix(".pkl")
+        cache_path = Path(cache_path)
+
+        if cache_path.exists() and cache_path.stat().st_mtime >= db_path.stat().st_mtime:
+            try:
+                with open(cache_path, "rb") as f:
+                    db = pickle.load(f)
+                db.source_path = db_path
+                db.cache_path = cache_path
+                return db
+            except Exception:
+                pass
+
         with open(db_path, "r", encoding="utf-8") as f:
             data = json.load(f)
         db = cls()
         db.regions = data
         db._build_indexes()
+        db.source_path = db_path
+        db.cache_path = cache_path
+
+        try:
+            with open(cache_path, "wb") as f:
+                pickle.dump(db, f, pickle.HIGHEST_PROTOCOL)
+        except Exception:
+            pass
+
         return db
 
     def _build_indexes(self):

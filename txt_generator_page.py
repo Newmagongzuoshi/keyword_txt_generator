@@ -83,6 +83,68 @@ class TxtGeneratorPage(ttk.Frame):
         folder = filedialog.askdirectory(title="选择 MP4 文件夹")
         if folder:
             self.mp4_folder.set(folder)
+            self._analyze_mp4_files(folder)
+
+    def _analyze_mp4_files(self, folder):
+        """分析文件夹中的MP4文件，统计地区层级分布，设置默认目标层级"""
+        import os
+        from pathlib import Path
+        from collections import Counter
+
+        extractor = self.extractor_ref.get("extractor")
+        if not extractor:
+            return
+
+        # 扫描MP4文件
+        mp4_files = []
+        for f in os.listdir(folder):
+            if f.lower().endswith('.mp4'):
+                mp4_files.append(f)
+
+        if not mp4_files:
+            return
+
+        # 统计各层级出现次数
+        level_counts = Counter()
+        sample_size = min(50, len(mp4_files))  # 最多分析50个文件作为样本
+
+        for filename in mp4_files[:sample_size]:
+            # 对每个文件名尝试提取所有层级
+            for level in [1, 2, 3, 4, 5]:  # 省级到村级
+                try:
+                    result = extractor.extract(filename, mode="priority", target_level=level)
+                    if result and result.get("success") and not result.get("is_fallback"):
+                        level_counts[level] += 1
+                except:
+                    continue
+
+        if not level_counts:
+            return
+
+        # 找到出现最多的层级
+        most_common_level = level_counts.most_common(1)[0][0]
+        level_name_map = {1: "省级", 2: "市级", 3: "区县级", 4: "乡镇街道级", 5: "村社区级"}
+        default_level_name = level_name_map.get(most_common_level, "区县级")
+
+        # 设置默认值
+        self.target_level.set(default_level_name)
+
+        # 显示统计信息（如果日志区域已初始化）
+        total_analyzed = sum(level_counts.values())
+        if total_analyzed > 0:
+            level_distribution = ", ".join([
+                f"{level_name_map[l]}: {count}"
+                for l, count in sorted(level_counts.items())
+            ])
+            try:
+                self._log(f"文件夹分析完成：共 {len(mp4_files)} 个MP4文件，"
+                         f"分析了 {sample_size} 个样本，"
+                         f"地区层级分布：{level_distribution}，"
+                         f"默认选择：{default_level_name}")
+            except:
+                # 如果日志区域还没准备好，静默跳过
+                pass
+
 
     def _select_keyword_file(self):
         file = filedialog.askopenfilename(

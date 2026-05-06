@@ -1,3 +1,4 @@
+import pickle
 import re
 from pathlib import Path
 
@@ -56,6 +57,34 @@ class RegionExtractor:
         self.normalize_cache = {}
         self.extract_cache = {}
         self._build_trie()
+
+    @classmethod
+    def load(cls, region_db, cache_path=None, force_rebuild=False):
+        if cache_path is None:
+            cache_path = Path(__file__).parent / "region_extractor.pkl"
+        else:
+            cache_path = Path(cache_path)
+
+        if not force_rebuild and cache_path.exists():
+            source_path = getattr(region_db, "source_path", None)
+            if source_path is None or cache_path.stat().st_mtime >= source_path.stat().st_mtime:
+                try:
+                    with open(cache_path, "rb") as f:
+                        extractor = pickle.load(f)
+                    extractor.region_db = region_db
+                    extractor.normalize_cache = {}
+                    extractor.extract_cache = {}
+                    return extractor
+                except Exception:
+                    pass
+
+        extractor = cls(region_db)
+        try:
+            with open(cache_path, "wb") as f:
+                pickle.dump(extractor, f, pickle.HIGHEST_PROTOCOL)
+        except Exception:
+            pass
+        return extractor
 
     def _build_trie(self):
         for region in self.region_db.regions:
