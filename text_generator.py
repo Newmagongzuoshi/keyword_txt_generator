@@ -34,22 +34,30 @@ def load_keywords(file_path):
     return keywords
 
 
-def load_first_words(text):
+def load_lines(text):
     if not text or not text.strip():
         return []
     lines = text.splitlines()
-    words = []
+    values = []
     seen = set()
     for line in lines:
-        w = line.strip()
-        if w and w not in seen:
-            words.append(w)
-            seen.add(w)
-    return words
+        item = line.strip()
+        if item and item not in seen:
+            values.append(item)
+            seen.add(item)
+    return values
 
 
-def generate_text(area_name, keywords, first_words, target_length):
-    if not keywords:
+def load_first_words(text):
+    return load_lines(text)
+
+
+def load_required_keywords(text):
+    return load_lines(text)
+
+
+def generate_text(area_name, keywords, first_words, required_keywords, required_keyword_order, target_length):
+    if not keywords and not required_keywords:
         return area_name
 
     variation = random.uniform(MIN_LENGTH_VARIATION_RATE, MAX_LENGTH_VARIATION_RATE)
@@ -62,13 +70,29 @@ def generate_text(area_name, keywords, first_words, target_length):
     best_length = 0
 
     for _ in range(RANDOM_ATTEMPTS):
-        shuffled = list(keywords)
-        random.shuffle(shuffled)
+        normal_keywords = list(keywords)
+        random.shuffle(normal_keywords)
+
+        if required_keywords:
+            if required_keyword_order == "随机":
+                ordered_required = list(required_keywords)
+                random.shuffle(ordered_required)
+            else:
+                ordered_required = list(required_keywords)
+        else:
+            ordered_required = []
 
         items = []
         current_length = 0
 
-        for keyword in shuffled:
+        # 先加入必选关键词，必须保留
+        for keyword in ordered_required:
+            phrase = area_name + keyword
+            next_length = len(phrase) if not items else current_length + 1 + len(phrase)
+            items.append(phrase)
+            current_length = next_length
+
+        for keyword in normal_keywords:
             if first_words and random.random() < 0.5:
                 fw = random.choice(first_words)
                 phrase = area_name + fw
@@ -91,9 +115,12 @@ def generate_text(area_name, keywords, first_words, target_length):
                 best_items = items
                 best_length = total
 
-    if not best_items and keywords:
-        fw = first_words[0] if first_words else keywords[0]
-        best_items = [area_name + fw]
-        best_length = len(best_items[0])
+    if not best_items and (keywords or required_keywords):
+        # 最低兜底：必选关键词优先展示
+        if required_keywords:
+            phrase = area_name + required_keywords[0]
+        else:
+            phrase = area_name + (first_words[0] if first_words else keywords[0])
+        best_items = [phrase]
 
     return "，".join(best_items)

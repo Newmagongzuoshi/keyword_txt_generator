@@ -7,7 +7,7 @@ from config import MAX_WORKERS, OUTPUT_ENCODING
 from text_generator import generate_text
 
 
-def process_one_mp4(mp4_file, keywords, first_words, target_length, extractor, mode, target_level):
+def process_one_mp4(mp4_file, keywords, required_keywords, required_keyword_order, first_words, target_length, extractor, mode, target_level):
     region_result = extractor.extract(str(mp4_file), mode, target_level)
     area_name = region_result["name"]
 
@@ -15,6 +15,8 @@ def process_one_mp4(mp4_file, keywords, first_words, target_length, extractor, m
         area_name=area_name,
         keywords=keywords,
         first_words=first_words,
+        required_keywords=required_keywords,
+        required_keyword_order=required_keyword_order,
         target_length=target_length,
     )
 
@@ -41,17 +43,27 @@ def scan_mp4_files(folder_path):
     return mp4_files
 
 
-def run_generation(mp4_folder, keyword_file, first_words_text, target_length,
+def run_generation(mp4_folder, keyword_file, required_keyword_file, required_keywords_text,
+                   required_keyword_order, first_words_text, target_length,
                    mode, target_level, extractor, log_callback, progress_callback):
     keywords = []
+    required_keywords = []
     first_words = []
     errors = []
 
-    from text_generator import load_keywords, load_first_words
+    from text_generator import load_keywords, load_first_words, load_required_keywords
     keywords = load_keywords(keyword_file)
     if not keywords:
         return {"success": False, "error": "关键词文件为空"}
 
+    if required_keyword_file:
+        if Path(required_keyword_file).is_file():
+            try:
+                required_keywords = load_keywords(required_keyword_file)
+            except Exception as e:
+                return {"success": False, "error": f"必选关键词文件读取失败：{e}"}
+
+    required_keywords += [kw for kw in load_required_keywords(required_keywords_text) if kw not in required_keywords]
     first_words = load_first_words(first_words_text)
 
     mp4_files = scan_mp4_files(mp4_folder)
@@ -73,7 +85,8 @@ def run_generation(mp4_folder, keyword_file, first_words_text, target_length,
         for mp4 in mp4_files:
             future = executor.submit(
                 process_one_mp4,
-                mp4, keywords, first_words, target_length,
+                mp4, keywords, required_keywords, required_keyword_order,
+                first_words, target_length,
                 extractor, mode, target_level,
             )
             futures[future] = mp4

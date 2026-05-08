@@ -30,7 +30,7 @@ def natural_sort_key(path):
 
 
 def get_folder_suffix(folder_index):
-    return "8" * folder_index
+    return f"_文件夹{folder_index}"
 
 
 def get_unique_path(target_path, used_paths, source_path=None):
@@ -133,6 +133,25 @@ def build_move_preview(root_dir, remove_text):
                 "source_folder": subfolder.name,
             })
 
+        if videos:
+            new_folder_name = f"{subfolder.name}{folder_suffix}"
+            folder_target = root_dir / new_folder_name
+            if folder_target.resolve() != subfolder.resolve():
+                folder_target = get_unique_path(
+                    target_path=folder_target,
+                    used_paths=used_paths,
+                    source_path=subfolder,
+                )
+                tasks.append({
+                    "mode": "rename_folder",
+                    "operation": "重命名文件夹",
+                    "source": subfolder,
+                    "target": folder_target,
+                    "folder_index": folder_index,
+                    "folder_suffix": folder_suffix,
+                    "source_folder": subfolder.name,
+                })
+
     _resolve_name_conflicts(tasks, used_paths)
     return tasks
 
@@ -192,6 +211,8 @@ def execute_tasks(tasks):
         try:
             if task["mode"] == "move":
                 shutil.move(str(source), str(target))
+            elif task["mode"] == "rename_folder":
+                source.rename(target)
             else:
                 source.rename(target)
             success_count += 1

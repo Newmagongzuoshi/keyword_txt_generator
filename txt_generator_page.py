@@ -12,6 +12,9 @@ class TxtGeneratorPage(ttk.Frame):
         self.extractor_ref = extractor_ref
         self.mp4_folder = tk.StringVar()
         self.keyword_file = tk.StringVar()
+        self.required_keyword_file = tk.StringVar()
+        self.required_keyword_order = tk.StringVar(value="随机")
+        self.keywords_text = tk.StringVar()  # 新增关键词编辑框变量
         self.target_length = tk.StringVar(value="500")
         self.extract_mode = tk.StringVar(value="优先提取")
         self.target_level = tk.StringVar(value="区县级")
@@ -41,6 +44,19 @@ class TxtGeneratorPage(ttk.Frame):
         ttk.Entry(row2, textvariable=self.keyword_file).pack(side=tk.LEFT, fill=tk.X, expand=True, padx=5)
         ttk.Button(row2, text="选择 TXT", command=self._select_keyword_file).pack(side=tk.LEFT)
 
+        row_req_file = ttk.Frame(main)
+        row_req_file.pack(fill=tk.X, pady=3)
+        ttk.Label(row_req_file, text="必选关键词 TXT：", width=14).pack(side=tk.LEFT)
+        ttk.Entry(row_req_file, textvariable=self.required_keyword_file).pack(side=tk.LEFT, fill=tk.X, expand=True, padx=5)
+        ttk.Button(row_req_file, text="选择 TXT", command=self._select_required_keyword_file).pack(side=tk.LEFT)
+
+        row_req_order = ttk.Frame(main)
+        row_req_order.pack(fill=tk.X, pady=3)
+        ttk.Label(row_req_order, text="必选关键词顺序：", width=14).pack(side=tk.LEFT)
+        ttk.Combobox(row_req_order, textvariable=self.required_keyword_order,
+                     values=["随机", "顺序"], state="readonly", width=12).pack(side=tk.LEFT, padx=5)
+        ttk.Label(row_req_order, text="写入必选关键词时的顺序", foreground="gray").pack(side=tk.LEFT)
+
         row3 = ttk.Frame(main)
         row3.pack(fill=tk.X, pady=3)
         ttk.Label(row3, text="目标文本长度：", width=14).pack(side=tk.LEFT)
@@ -61,12 +77,37 @@ class TxtGeneratorPage(ttk.Frame):
                                      values=LEVEL_ORDER, state="readonly", width=12)
         self.cb_level.pack(side=tk.LEFT)
 
+        # 关键词编辑框 - 蓝色边框
+        row_keywords = ttk.Frame(main)
+        row_keywords.pack(fill=tk.X, pady=3)
+        ttk.Label(row_keywords, text="关键词\n（每行一个）：", width=14).pack(side=tk.LEFT, anchor=tk.N)
+        self.keywords_text = scrolledtext.ScrolledText(row_keywords, height=4, width=40,
+                                                       highlightbackground="#4A90E2", highlightcolor="#4A90E2",
+                                                       highlightthickness=2)
+        self.keywords_text.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=5)
+        ttk.Label(row_keywords, text="可不填，可从TXT导入或在此编辑",
+                  foreground="gray").pack(side=tk.LEFT)
+
+        # 必选关键词编辑框 - 红色边框
         row5 = ttk.Frame(main)
         row5.pack(fill=tk.X, pady=3)
-        ttk.Label(row5, text="首词（每行一个）：", width=14).pack(side=tk.LEFT, anchor=tk.N)
-        self.first_words_text = scrolledtext.ScrolledText(row5, height=4, width=40)
+        ttk.Label(row5, text="必选关键词\n（每行一个）：", width=14).pack(side=tk.LEFT, anchor=tk.N)
+        self.required_keywords_text = scrolledtext.ScrolledText(row5, height=4, width=40,
+                                                                highlightbackground="#E74C3C", highlightcolor="#E74C3C",
+                                                                highlightthickness=2)
+        self.required_keywords_text.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=5)
+        ttk.Label(row5, text="可不填，可从TXT导入或在此编辑",
+                  foreground="gray").pack(side=tk.LEFT)
+
+        # 首词编辑框 - 绿色边框
+        row6 = ttk.Frame(main)
+        row6.pack(fill=tk.X, pady=3)
+        ttk.Label(row6, text="首词\n（每行一个）：", width=14).pack(side=tk.LEFT, anchor=tk.N)
+        self.first_words_text = scrolledtext.ScrolledText(row6, height=4, width=40,
+                                                          highlightbackground="#27AE60", highlightcolor="#27AE60",
+                                                          highlightthickness=2)
         self.first_words_text.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=5)
-        ttk.Label(row5, text="可不填，一行一个首词，\n程序会随机选择一个放在最前面",
+        ttk.Label(row6, text="可不填，一行一个首词，\n程序会随机选择一个放在最前面",
                   foreground="gray").pack(side=tk.LEFT)
 
         btn_row = ttk.Frame(main)
@@ -173,6 +214,14 @@ class TxtGeneratorPage(ttk.Frame):
         if file:
             self.keyword_file.set(file)
 
+    def _select_required_keyword_file(self):
+        file = filedialog.askopenfilename(
+            title="选择必选关键词 TXT",
+            filetypes=[("文本文件", "*.txt"), ("所有文件", "*.*")],
+        )
+        if file:
+            self.required_keyword_file.set(file)
+
     def _log(self, msg):
         self.log_area.configure(state=tk.NORMAL)
         self.log_area.insert(tk.END, msg + "\n")
@@ -236,9 +285,16 @@ class TxtGeneratorPage(ttk.Frame):
                     _log_safe("错误：地区提取器未初始化")
                     return
 
+                required_keyword_file = self.required_keyword_file.get().strip()
+                required_keywords_text = self.required_keywords_text.get("1.0", tk.END)
+                required_keyword_order = self.required_keyword_order.get()
+
                 result = run_generation(
                     mp4_folder=mp4_folder,
                     keyword_file=keyword_file,
+                    required_keyword_file=required_keyword_file,
+                    required_keywords_text=required_keywords_text,
+                    required_keyword_order=required_keyword_order,
                     first_words_text=first_words_text,
                     target_length=target_length,
                     mode=mode,
