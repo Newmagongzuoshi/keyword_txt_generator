@@ -109,8 +109,12 @@ class RegionExtractor:
 
     def normalize_filename(self, filename):
         stem = Path(filename).stem
+        # 去除 _文件夹N / -文件夹N / _文件夹 等后缀（支持中文数字）
+        stem = re.sub(r"[_\-－—–]\s*文件夹\s*[一二三四五六七八九十\d]*$", "", stem)
         text = stem.translate(DIGIT_TRANSLATION)
         text = re.sub(r"\d+", "", text)
+        # 将地区间常见分隔符替换为空格，避免粘连
+        text = re.sub(r"[_\-－—–·、，,。/\\~→\s]+", " ", text)
         chinese_parts = re.findall(r"[一-鿿]+", text)
         text = "".join(chinese_parts)
 
@@ -153,34 +157,49 @@ class RegionExtractor:
 
         raw_matches.sort(key=lambda m: (m["start"], m["region"]["level"]))
 
+        def _resolve_overlap(m, k):
+            """Determine which of two overlapping matches to keep. Returns 'm', 'k', or None (skip both)."""
+            m_start, m_end = m["start"], m["end"]
+            k_start, k_end = k["start"], k["end"]
+            m_level = m["region"]["level"]
+            k_level = k["region"]["level"]
+            m_len = m_end - m_start
+            k_len = k_end - k_start
+            m_direct = self._is_direct_name(m)
+            k_direct = self._is_direct_name(k)
+
+            if m_start >= k_start and m_end <= k_end:
+                return "k"  # m完全被k包含，保留k
+            if k_start >= m_start and k_end <= m_end:
+                return "m"  # k完全被m包含，保留m
+
+            # 部分重叠：优先直接名称匹配，然后长度
+            if m_direct and not k_direct:
+                return "m"
+            if k_direct and not m_direct:
+                return "k"
+
+            if m_len >= k_len * 2:
+                return "m"  # m明显更长，更可信
+            if k_len >= m_len * 2:
+                return "k"  # k明显更长，更可信
+
+            if m_level > k_level:
+                return "m"
+            if k_level > m_level:
+                return "k"
+
+            if m_len > k_len:
+                return "m"
+            return "k"
+
         kept = []
         for m in raw_matches:
-            m_level = m["region"]["level"]
-            m_len = m["end"] - m["start"]
-            m_direct = self._is_direct_name(m)
-
             should_keep = True
             for i, k in enumerate(kept):
                 if not (m["end"] <= k["start"] or m["start"] >= k["end"]):
-                    k_level = k["region"]["level"]
-                    k_len = k["end"] - k["start"]
-                    k_direct = self._is_direct_name(k)
-
-                    if m_level > k_level:
-                        kept[i] = m
-                        should_keep = False
-                        break
-                    elif m_level < k_level:
-                        should_keep = False
-                        break
-                    elif m_direct and not k_direct:
-                        kept[i] = m
-                        should_keep = False
-                        break
-                    elif not m_direct and k_direct:
-                        should_keep = False
-                        break
-                    elif m_len > k_len:
+                    winner = _resolve_overlap(m, k)
+                    if winner == "m":
                         kept[i] = m
                         should_keep = False
                         break

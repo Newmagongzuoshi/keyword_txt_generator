@@ -52,6 +52,7 @@ INVALID_TAIL_WORDS = [
     "附近",
     "周边",
     "本地",
+    "文件夹",
 ]
 
 FULL_WIDTH_DIGITS = "０１２３４５６７８９"

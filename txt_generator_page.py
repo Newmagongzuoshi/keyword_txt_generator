@@ -14,13 +14,14 @@ class TxtGeneratorPage(ttk.Frame):
         self.keyword_file = tk.StringVar()
         self.required_keyword_file = tk.StringVar()
         self.required_keyword_order = tk.StringVar(value="随机")
-        self.keywords_text = tk.StringVar()  # 新增关键词编辑框变量
         self.target_length = tk.StringVar(value="500")
         self.extract_mode = tk.StringVar(value="优先提取")
         self.target_level = tk.StringVar(value="区县级")
         self.smart_mode = tk.BooleanVar(value=True)  # 智能模式默认启用
         self._building = False
         self._setup_ui()
+        # 监听关键词文件路径变化，控制编辑框状态
+        self.keyword_file.trace_add("write", self._on_keyword_file_change)
         # 初始化智能模式状态
         self._on_smart_mode_toggle()
 
@@ -214,6 +215,13 @@ class TxtGeneratorPage(ttk.Frame):
         if file:
             self.keyword_file.set(file)
 
+    def _on_keyword_file_change(self, *args):
+        path = self.keyword_file.get().strip()
+        if path and os.path.isfile(path):
+            self.keywords_text.configure(state=tk.DISABLED)
+        else:
+            self.keywords_text.configure(state=tk.NORMAL)
+
     def _select_required_keyword_file(self):
         file = filedialog.askopenfilename(
             title="选择必选关键词 TXT",
@@ -236,12 +244,15 @@ class TxtGeneratorPage(ttk.Frame):
     def _start_generation(self):
         mp4_folder = self.mp4_folder.get().strip()
         keyword_file = self.keyword_file.get().strip()
+        keywords_text = self.keywords_text.get("1.0", tk.END)
 
         if not mp4_folder or not os.path.isdir(mp4_folder):
             messagebox.showwarning("提示", "请先选择有效的 MP4 文件夹")
             return
-        if not keyword_file or not os.path.isfile(keyword_file):
-            messagebox.showwarning("提示", "请先选择有效的关键词 TXT 文件")
+        has_keyword_file = keyword_file and os.path.isfile(keyword_file)
+        has_keywords_text = bool(keywords_text.strip())
+        if not has_keyword_file and not has_keywords_text:
+            messagebox.showwarning("提示", "请选择关键词 TXT 文件或在关键词编辑框中填写内容")
             return
 
         try:
@@ -292,6 +303,7 @@ class TxtGeneratorPage(ttk.Frame):
                 result = run_generation(
                     mp4_folder=mp4_folder,
                     keyword_file=keyword_file,
+                    keywords_text=keywords_text,
                     required_keyword_file=required_keyword_file,
                     required_keywords_text=required_keywords_text,
                     required_keyword_order=required_keyword_order,

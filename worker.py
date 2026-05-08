@@ -43,7 +43,7 @@ def scan_mp4_files(folder_path):
     return mp4_files
 
 
-def run_generation(mp4_folder, keyword_file, required_keyword_file, required_keywords_text,
+def run_generation(mp4_folder, keyword_file, keywords_text, required_keyword_file, required_keywords_text,
                    required_keyword_order, first_words_text, target_length,
                    mode, target_level, extractor, log_callback, progress_callback):
     keywords = []
@@ -51,10 +51,14 @@ def run_generation(mp4_folder, keyword_file, required_keyword_file, required_key
     first_words = []
     errors = []
 
-    from text_generator import load_keywords, load_first_words, load_required_keywords
-    keywords = load_keywords(keyword_file)
+    from text_generator import load_keywords, load_lines, load_first_words, load_required_keywords
+
+    if keyword_file and Path(keyword_file).is_file():
+        keywords = load_keywords(keyword_file)
+    if not keywords and keywords_text and keywords_text.strip():
+        keywords = load_lines(keywords_text)
     if not keywords:
-        return {"success": False, "error": "关键词文件为空"}
+        return {"success": False, "error": "关键词为空"}
 
     if required_keyword_file:
         if Path(required_keyword_file).is_file():
