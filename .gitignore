@@ -10,3 +10,4 @@ __pycache__/
 !.vscode/settings.json
 region_db.pkl
 region_extractor.pkl
+build_pyinstaller/
