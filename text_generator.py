@@ -56,7 +56,7 @@ def load_required_keywords(text):
     return load_lines(text)
 
 
-def generate_text(area_name, keywords, first_words, required_keywords, required_keyword_order, target_length):
+def generate_text(area_name, keywords, first_words, required_keywords, required_keyword_order, separator, target_length):
     if not keywords and not required_keywords:
         return area_name
 
@@ -85,7 +85,15 @@ def generate_text(area_name, keywords, first_words, required_keywords, required_
         items = []
         current_length = 0
 
-        # 先加入必选关键词，必须保留
+        # 首词放在最前面
+        if first_words:
+            fw = random.choice(first_words)
+            phrase = area_name + fw
+            next_length = len(phrase)
+            items.append(phrase)
+            current_length = next_length
+
+        # 再加入必选关键词，必须保留
         for keyword in ordered_required:
             phrase = area_name + keyword
             next_length = len(phrase) if not items else current_length + 1 + len(phrase)
@@ -93,12 +101,7 @@ def generate_text(area_name, keywords, first_words, required_keywords, required_
             current_length = next_length
 
         for keyword in normal_keywords:
-            if first_words and random.random() < 0.5:
-                fw = random.choice(first_words)
-                phrase = area_name + fw
-            else:
-                phrase = area_name + keyword
-
+            phrase = area_name + keyword
             next_length = current_length + len(phrase)
             if items:
                 next_length += 1
@@ -123,4 +126,4 @@ def generate_text(area_name, keywords, first_words, required_keywords, required_
             phrase = area_name + (first_words[0] if first_words else keywords[0])
         best_items = [phrase]
 
-    return "，".join(best_items)
+    return separator.join(best_items)

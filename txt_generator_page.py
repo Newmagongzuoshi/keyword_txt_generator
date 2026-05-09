@@ -18,6 +18,7 @@ class TxtGeneratorPage(ttk.Frame):
         self.extract_mode = tk.StringVar(value="优先提取")
         self.target_level = tk.StringVar(value="区县级")
         self.smart_mode = tk.BooleanVar(value=True)  # 智能模式默认启用
+        self.separator = tk.StringVar(value="，")
         self._building = False
         self._setup_ui()
         # 监听关键词文件路径变化，控制编辑框状态
@@ -57,6 +58,14 @@ class TxtGeneratorPage(ttk.Frame):
         ttk.Combobox(row_req_order, textvariable=self.required_keyword_order,
                      values=["随机", "顺序"], state="readonly", width=12).pack(side=tk.LEFT, padx=5)
         ttk.Label(row_req_order, text="写入必选关键词时的顺序", foreground="gray").pack(side=tk.LEFT)
+
+        row_sep = ttk.Frame(main)
+        row_sep.pack(fill=tk.X, pady=3)
+        ttk.Label(row_sep, text="分隔符：", width=14).pack(side=tk.LEFT)
+        ttk.Combobox(row_sep, textvariable=self.separator,
+                     values=["，", "、", ",", "；", "。", "|", " ", "~", "-"],
+                     width=6).pack(side=tk.LEFT, padx=5)
+        ttk.Label(row_sep, text="生成文案时使用的分隔符", foreground="gray").pack(side=tk.LEFT)
 
         row3 = ttk.Frame(main)
         row3.pack(fill=tk.X, pady=3)
@@ -308,6 +317,7 @@ class TxtGeneratorPage(ttk.Frame):
                     required_keywords_text=required_keywords_text,
                     required_keyword_order=required_keyword_order,
                     first_words_text=first_words_text,
+                    separator=self.separator.get(),
                     target_length=target_length,
                     mode=mode,
                     target_level=target_level,

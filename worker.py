@@ -7,7 +7,7 @@ from config import MAX_WORKERS, OUTPUT_ENCODING
 from text_generator import generate_text
 
 
-def process_one_mp4(mp4_file, keywords, required_keywords, required_keyword_order, first_words, target_length, extractor, mode, target_level):
+def process_one_mp4(mp4_file, keywords, required_keywords, required_keyword_order, first_words, separator, target_length, extractor, mode, target_level):
     region_result = extractor.extract(str(mp4_file), mode, target_level)
     area_name = region_result["name"]
 
@@ -17,6 +17,7 @@ def process_one_mp4(mp4_file, keywords, required_keywords, required_keyword_orde
         first_words=first_words,
         required_keywords=required_keywords,
         required_keyword_order=required_keyword_order,
+        separator=separator,
         target_length=target_length,
     )
 
@@ -44,7 +45,7 @@ def scan_mp4_files(folder_path):
 
 
 def run_generation(mp4_folder, keyword_file, keywords_text, required_keyword_file, required_keywords_text,
-                   required_keyword_order, first_words_text, target_length,
+                   required_keyword_order, first_words_text, separator, target_length,
                    mode, target_level, extractor, log_callback, progress_callback):
     keywords = []
     required_keywords = []
@@ -90,7 +91,7 @@ def run_generation(mp4_folder, keyword_file, keywords_text, required_keyword_fil
             future = executor.submit(
                 process_one_mp4,
                 mp4, keywords, required_keywords, required_keyword_order,
-                first_words, target_length,
+                first_words, separator, target_length,
                 extractor, mode, target_level,
             )
             futures[future] = mp4
