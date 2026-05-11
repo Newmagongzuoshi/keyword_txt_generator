@@ -29,8 +29,8 @@ def natural_sort_key(path):
     ]
 
 
-def get_folder_suffix(folder_index):
-    return f"_文件夹{folder_index}"
+def get_folder_suffix(folder_index, prefix="_文件夹"):
+    return f"{prefix}{folder_index}"
 
 
 def get_unique_path(target_path, used_paths, source_path=None):
@@ -96,7 +96,7 @@ def _resolve_name_conflicts(tasks, used_paths):
     return tasks
 
 
-def build_move_preview(root_dir, remove_text):
+def build_move_preview(root_dir, remove_text, folder_prefix="_文件夹", start_number=1):
     tasks = []
     used_paths = set()
 
@@ -106,8 +106,9 @@ def build_move_preview(root_dir, remove_text):
         key=natural_sort_key,
     )
 
-    for folder_index, subfolder in enumerate(subfolders, start=1):
-        folder_suffix = get_folder_suffix(folder_index)
+    for idx, subfolder in enumerate(subfolders):
+        folder_index = start_number + idx
+        folder_suffix = get_folder_suffix(folder_index, folder_prefix)
 
         videos = [p for p in subfolder.iterdir() if is_video_file(p)]
         videos.sort(key=lambda x: (get_create_time(x), x.name.lower()))

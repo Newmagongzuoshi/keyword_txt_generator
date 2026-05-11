@@ -15,9 +15,13 @@ class VideoMoverPage(ttk.Frame):
         super().__init__(parent)
         self.root_folder = tk.StringVar()
         self.remove_text = tk.StringVar()
+        self.folder_prefix = tk.StringVar(value="_文件夹")
+        self.start_number = tk.StringVar(value="1")
+        self.example_text = tk.StringVar(value="示例：_文件夹1")
         self.current_mode = None
         self.preview_tasks = []
         self._setup_ui()
+        self._bind_suffix_trace()
 
     def _setup_ui(self):
         main = ttk.Frame(self, padding=10)
@@ -35,15 +39,27 @@ class VideoMoverPage(ttk.Frame):
 
         row2 = ttk.Frame(main)
         row2.pack(fill=tk.X, pady=3)
-        ttk.Label(row2, text="删除文件名中的指定内容：", width=18).pack(side=tk.LEFT)
+        ttk.Label(row2, text="删除文件名中的指定内容：").pack(side=tk.LEFT)
         ttk.Entry(row2, textvariable=self.remove_text, width=30).pack(side=tk.LEFT, padx=5)
         ttk.Label(row2, text="例如：_副本", foreground="gray").pack(side=tk.LEFT)
+
+        row3 = ttk.Frame(main)
+        row3.pack(fill=tk.X, pady=3)
+        ttk.Label(row3, text="文件夹后缀：", width=18).pack(side=tk.LEFT)
+        ttk.Entry(row3, textvariable=self.folder_prefix, width=10).pack(side=tk.LEFT)
+        ttk.Label(row3, text=" 起始编号：").pack(side=tk.LEFT)
+        vcmd = (self.register(self._validate_start_number), "%P")
+        ttk.Entry(row3, textvariable=self.start_number, width=6, validate="key",
+                  validatecommand=vcmd).pack(side=tk.LEFT)
+        ttk.Label(row3, textvariable=self.example_text, foreground="gray").pack(side=tk.LEFT, padx=5)
 
         btn_row = ttk.Frame(main)
         btn_row.pack(fill=tk.X, pady=10)
         ttk.Button(btn_row, text="生成移动预览", command=self._build_move_preview).pack(side=tk.LEFT, padx=3)
-        ttk.Button(btn_row, text="预览：只删除文件名指定内容",
-                   command=self._build_rename_preview).pack(side=tk.LEFT, padx=3)
+        tk.Button(btn_row, text="预览：只删除文件名指定内容",
+                  command=self._build_rename_preview,
+                  fg="red", bg="black", relief="groove",
+                  font=("Microsoft YaHei", 9)).pack(side=tk.LEFT, padx=3)
         ttk.Button(btn_row, text="确认执行当前预览",
                    command=self._confirm_execute).pack(side=tk.LEFT, padx=3)
         ttk.Button(btn_row, text="清空预览",
@@ -65,7 +81,6 @@ class VideoMoverPage(ttk.Frame):
         self.tree.configure(yscrollcommand=scrollbar.set)
         self.tree.pack(fill=tk.BOTH, expand=True, pady=(5, 0))
         scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
-        scrollbar.pack_forget()
 
         log_frame = ttk.LabelFrame(main, text="运行日志", padding=5)
         log_frame.pack(fill=tk.BOTH, expand=True, pady=5)
@@ -76,6 +91,31 @@ class VideoMoverPage(ttk.Frame):
         folder = filedialog.askdirectory(title="选择总文件夹")
         if folder:
             self.root_folder.set(folder)
+
+    def _bind_suffix_trace(self):
+        def on_change(*_):
+            self._update_example()
+        self.folder_prefix.trace_add("write", on_change)
+        self.start_number.trace_add("write", on_change)
+
+    def _update_example(self):
+        prefix = self.folder_prefix.get().strip() or "_文件夹"
+        try:
+            num = int(self.start_number.get())
+        except ValueError:
+            num = 1
+        self.example_text.set(f"示例：{prefix}{num}")
+
+    def _validate_start_number(self, value):
+        if value == "":
+            return True
+        return value.isdigit() and int(value) > 0
+
+    def _get_start_number(self):
+        try:
+            return int(self.start_number.get())
+        except ValueError:
+            return 1
 
     def _log(self, msg):
         self.log_area.configure(state=tk.NORMAL)
@@ -118,10 +158,12 @@ class VideoMoverPage(ttk.Frame):
             return
 
         remove_text = self.remove_text.get().strip()
+        folder_prefix = self.folder_prefix.get().strip() or "_文件夹"
+        start_number = self._get_start_number()
         self._log("正在扫描子文件夹并生成移动预览...")
 
         try:
-            tasks = build_move_preview(root_dir, remove_text)
+            tasks = build_move_preview(root_dir, remove_text, folder_prefix, start_number)
         except Exception as e:
             self._log(f"生成预览失败：{e}")
             return
