@@ -324,6 +324,7 @@ class TxtGeneratorPage(ttk.Frame):
                     extractor=extractor,
                     log_callback=_log_safe,
                     progress_callback=_progress_safe,
+                    smart_mode=self.smart_mode.get(),
                 )
                 _log_safe("")
                 if result.get("success"):

@@ -87,6 +87,21 @@ class RegionExtractor:
             pass
         return extractor
 
+    # 省级行政区后缀，用于自动生成常见简称
+    PROVINCE_SUFFIXES = [
+        "壮族自治区", "回族自治区", "维吾尔自治区",
+        "自治区", "省", "市",
+    ]
+
+    def _auto_abbreviation(self, full_name):
+        """从省级全称自动派生常见简称，如 广西壮族自治区→广西"""
+        for suffix in self.PROVINCE_SUFFIXES:
+            if full_name.endswith(suffix) and len(full_name) > len(suffix):
+                abbr = full_name[:-len(suffix)]
+                if len(abbr) >= 2:
+                    return abbr
+        return None
+
     def _build_trie(self):
         for region in self.region_db.regions:
             names = set()
@@ -94,6 +109,11 @@ class RegionExtractor:
             names.add(region["short_name"])
             for alias in region.get("aliases", []):
                 names.add(alias)
+            # 对省级地区自动生成常见简称
+            if region["level"] == 1:
+                abbr = self._auto_abbreviation(region["name"])
+                if abbr and abbr not in names:
+                    names.add(abbr)
             for name in names:
                 name = name.strip()
                 if name:
@@ -261,6 +281,15 @@ class RegionExtractor:
 
         return None
 
+    def select_lowest(self, candidates):
+        """智能匹配：从候选者中选择最低（最具体）行政层级"""
+        best = self._choose_most_specific(candidates)
+        if best is None:
+            return None
+        best["is_fallback"] = False
+        best["reason"] = f"智能匹配成功提取{best['level_name']}：{best['name']}"
+        return best
+
     def select_by_force(self, candidates, target_level):
         source = self._choose_most_specific(candidates)
         if source is None:
@@ -379,7 +408,9 @@ class RegionExtractor:
             }
         else:
             target_level_name = level_name_map.get(target_level, "")
-            if mode == "priority":
+            if mode == "lowest":
+                selected = self.select_lowest(candidates)
+            elif mode == "priority":
                 selected = self.select_by_priority(candidates, target_level)
             else:
                 selected = self.select_by_force(candidates, target_level)
