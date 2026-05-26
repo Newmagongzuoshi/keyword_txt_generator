@@ -2,6 +2,7 @@ import os
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox, scrolledtext
 import threading
+from pathlib import Path
 
 from config import LEVEL_ORDER
 
@@ -14,7 +15,7 @@ class TxtGeneratorPage(ttk.Frame):
         self.keyword_file = tk.StringVar()
         self.required_keyword_file = tk.StringVar()
         self.required_keyword_order = tk.StringVar(value="随机")
-        self.target_length = tk.StringVar(value="500")
+        self.target_length = tk.StringVar(value="800")
         self.extract_mode = tk.StringVar(value="优先提取")
         self.target_level = tk.StringVar(value="区县级")
         self.smart_mode = tk.BooleanVar(value=True)  # 智能模式默认启用
@@ -30,7 +31,7 @@ class TxtGeneratorPage(ttk.Frame):
         main = ttk.Frame(self, padding=10)
         main.pack(fill=tk.BOTH, expand=True)
 
-        title = ttk.Label(main, text="关键词同名 TXT 生成工具",
+        title = ttk.Label(main, text="关键词同名 TXT 生成工具 v1.2.0",
                           font=("Microsoft YaHei", 16, "bold"))
         title.pack(pady=(0, 10))
 
@@ -279,6 +280,20 @@ class TxtGeneratorPage(ttk.Frame):
 
         first_words_text = self.first_words_text.get("1.0", tk.END)
 
+        # 检查必选关键词是否超过目标文本长度
+        required_keywords_text = self.required_keywords_text.get("1.0", tk.END)
+        if required_keywords_text.strip():
+            req_lines = [l.strip() for l in required_keywords_text.splitlines() if l.strip()]
+            if req_lines:
+                total_req_len = sum(len(l) for l in req_lines) + len(req_lines) - 1  # 加上分隔符
+                if total_req_len > target_length:
+                    messagebox.showwarning(
+                        "必选关键词过长",
+                        "必选关键词总长度（%d字）超过了目标文本长度（%d字）\n请调整后重试" % (total_req_len, target_length)
+                    )
+                    self.required_keywords_text.delete("1.0", tk.END)
+                    return
+
         self.start_btn.configure(state=tk.DISABLED)
         self.stop_btn.configure(state=tk.NORMAL)
         self.progress["value"] = 0
@@ -329,6 +344,10 @@ class TxtGeneratorPage(ttk.Frame):
                 _log_safe("")
                 if result.get("success"):
                     _log_safe(result["summary"])
+                    # 弹出地址映射对话框
+                    region_map = result.get("region_origin_map", {})
+                    if region_map:
+                        self.after(0, lambda: self._show_region_mapping(region_map))
                 else:
                     _log_safe(f"错误：{result.get('error', '未知错误')}")
             except Exception as e:
@@ -337,6 +356,212 @@ class TxtGeneratorPage(ttk.Frame):
                 self.after(0, self._on_done)
 
         threading.Thread(target=run, daemon=True).start()
+
+    def _show_region_mapping(self, region_origin_map):
+        """弹出地址映射对话框，默认全屏，表格展示，标注降级和可信度"""
+        if not region_origin_map:
+            return
+        dialog = tk.Toplevel(self)
+        dialog.title("地址提取映射")
+        dialog.configure(bg="#f5f5f5")
+        dialog.geometry("960x640")
+        dialog.minsize(600, 400)
+        dialog.resizable(True, True)
+
+        # 构建行数据：每个地区一行，原地址横向展开为多列
+        row_data = []
+        max_cols = 0
+        for region_name, entries in region_origin_map.items():
+            originals = [e["original"] for e in entries]
+            fallback_count = sum(1 for e in entries if e["is_fallback"])
+            total = len(entries)
+            is_degraded = fallback_count > 0
+            if fallback_count == 0:
+                credibility = "可信"
+            elif fallback_count < total:
+                credibility = "部分可信"
+            else:
+                credibility = "低可信"
+            row_data.append({
+                "region": region_name, "originals": originals,
+                "total": total, "credibility": credibility,
+                "is_degraded": is_degraded,
+            })
+            max_cols = max(max_cols, total)
+
+        # 降级优先，文件数从少到多
+        row_data.sort(key=lambda r: (not r["is_degraded"], r["total"], r["region"]))
+
+        # 表格容器
+        table_frame = tk.Frame(dialog, bg="white", highlightbackground="#ddd", highlightthickness=1)
+        table_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=5)
+
+        # 动态列名
+        columns = ("序号", "可信度", "提取地址", "文件数") + tuple("原地址%d" % (i+1) for i in range(max_cols))
+        tree = ttk.Treeview(table_frame, columns=columns, show="headings", selectmode="extended")
+        tree.heading("序号", text="#", anchor=tk.CENTER)
+        tree.heading("可信度", text="可信度", anchor=tk.CENTER)
+        tree.heading("提取地址", text="提取地址", anchor=tk.W)
+        tree.heading("文件数", text="文件数", anchor=tk.CENTER)
+        for i in range(max_cols):
+            tree.heading("原地址%d" % (i+1), text="原地址%d" % (i+1), anchor=tk.W)
+
+        tree.column("序号", width=40, anchor=tk.CENTER, stretch=False)
+        tree.column("可信度", width=80, anchor=tk.CENTER, stretch=False)
+        tree.column("提取地址", width=130, anchor=tk.W)
+        tree.column("文件数", width=55, anchor=tk.CENTER, stretch=False)
+        for i in range(max_cols):
+            tree.column("原地址%d" % (i+1), width=260, anchor=tk.W)
+
+        # 行颜色
+        tree.tag_configure("degraded", background="#fff3cd")
+        tree.tag_configure("normal_even", background="#f8f9fa")
+        tree.tag_configure("normal_odd", background="white")
+        tree.tag_configure("trusted", foreground="#27ae60")
+        tree.tag_configure("partial", foreground="#e67e22")
+        tree.tag_configure("low", foreground="#e74c3c")
+
+        cred_color_map = {"可信": "trusted", "部分可信": "partial", "低可信": "low"}
+
+        for i, rd in enumerate(row_data):
+            vals = [i + 1, rd["credibility"], rd["region"], rd["total"]]
+            vals += rd["originals"] + [""] * (max_cols - len(rd["originals"]))
+            tag = "degraded" if rd["is_degraded"] else ("normal_even" if i % 2 == 0 else "normal_odd")
+            cred_tag = cred_color_map.get(rd["credibility"], "trusted")
+            tree.insert("", tk.END, values=vals, tags=(tag, cred_tag))
+
+        # 统计
+        total_regions = len(row_data)
+        total_files = sum(r["total"] for r in row_data)
+        degraded_regions = sum(1 for r in row_data if r["is_degraded"])
+
+        # 标题栏
+        header = tk.Frame(dialog, bg="#2c3e50", height=44)
+        header.pack(fill=tk.X)
+        header.pack_propagate(False)
+        tk.Label(header, text="  地区提取映射结果", font=("Microsoft YaHei", 13, "bold"),
+                 bg="#2c3e50", fg="white").pack(side=tk.LEFT, pady=10)
+
+        # 统计 + 按钮
+        toolbar = tk.Frame(dialog, bg="#ecf0f1")
+        toolbar.pack(fill=tk.X, padx=10, pady=(8, 0))
+        stats_text = "共 %d 个地区，%d 个文件" % (total_regions, total_files)
+        if degraded_regions > 0:
+            stats_text += "    |    %d 个地区涉及降级" % degraded_regions
+        tk.Label(toolbar, text=stats_text,
+                 font=("Microsoft YaHei", 10, "bold"), bg="#ecf0f1", fg="#2c3e50").pack(side=tk.LEFT, pady=6)
+
+        # 滚动条
+        vsb = ttk.Scrollbar(table_frame, orient=tk.VERTICAL, command=tree.yview)
+        tree.configure(yscrollcommand=vsb.set)
+        vsb.pack(side=tk.RIGHT, fill=tk.Y)
+        tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+
+        # 图例
+        legend = tk.Frame(dialog, bg="#f5f5f5")
+        legend.pack(fill=tk.X, padx=15, pady=(2, 0))
+        tk.Label(legend, text="可信", fg="#27ae60", font=("Microsoft YaHei", 9), bg="#f5f5f5").pack(side=tk.LEFT, padx=4)
+        tk.Label(legend, text="部分可信", fg="#e67e22", font=("Microsoft YaHei", 9), bg="#f5f5f5").pack(side=tk.LEFT, padx=4)
+        tk.Label(legend, text="低可信", fg="#e74c3c", font=("Microsoft YaHei", 9), bg="#f5f5f5").pack(side=tk.LEFT, padx=4)
+        tk.Label(legend, text="   黄色底色 = 涉及降级", bg="#fff3cd", fg="#856404",
+                 font=("Microsoft YaHei", 9)).pack(side=tk.LEFT, padx=10)
+
+        # 底部
+        bottom = tk.Frame(dialog, bg="#f5f5f5")
+        bottom.pack(fill=tk.X, padx=10, pady=(10, 15))
+        ttk.Button(bottom, text="关闭", command=dialog.destroy).pack(side=tk.RIGHT, padx=6, ipadx=8, ipady=4)
+        save_btn = tk.Button(bottom, text="  另存为 Excel  ", font=("Microsoft YaHei", 11, "bold"),
+                             bg="#27ae60", fg="white", relief=tk.FLAT, cursor="hand2",
+                             command=lambda: self._save_mapping(tree, max_cols),
+                             activebackground="#219a52", activeforeground="white",
+                             padx=16, pady=6)
+        save_btn.pack(side=tk.RIGHT, padx=6)
+
+        # 默认最大化打开
+        dialog.after(100, lambda: dialog.state("zoomed"))
+
+    def _save_mapping(self, tree, max_cols):
+        """保存映射表格为 Excel 文件，默认文件名用视频文件夹名"""
+        folder_name = Path(self.mp4_folder.get()).name if self.mp4_folder.get() else "地址映射"
+        default_name = "%s-地址映射" % folder_name
+        file = filedialog.asksaveasfilename(
+            title="保存地址映射",
+            initialfile=default_name,
+            defaultextension=".xlsx",
+            filetypes=[("Excel 文件", "*.xlsx"), ("所有文件", "*.*")],
+        )
+        if not file:
+            return
+        try:
+            import openpyxl
+            from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+
+            wb = openpyxl.Workbook()
+            ws = wb.active
+            ws.title = "地址映射"
+
+            # 表头
+            headers = ["序号", "可信度", "提取地址", "文件数"] + ["原地址%d" % (i+1) for i in range(max_cols)]
+            header_fill = PatternFill(start_color="2c3e50", end_color="2c3e50", fill_type="solid")
+            header_font = Font(name="Microsoft YaHei", size=10, bold=True, color="ffffff")
+            thin_border = Border(
+                left=Side(style="thin", color="cccccc"),
+                right=Side(style="thin", color="cccccc"),
+                top=Side(style="thin", color="cccccc"),
+                bottom=Side(style="thin", color="cccccc"),
+            )
+
+            for ci, h in enumerate(headers, 1):
+                cell = ws.cell(row=1, column=ci, value=h)
+                cell.fill = header_fill
+                cell.font = header_font
+                cell.alignment = Alignment(horizontal="center", vertical="center")
+                cell.border = thin_border
+
+            # 数据行
+            degrade_fill = PatternFill(start_color="fff3cd", end_color="fff3cd", fill_type="solid")
+            even_fill = PatternFill(start_color="f8f9fa", end_color="f8f9fa", fill_type="solid")
+            cred_fonts = {
+                "可信": Font(name="Microsoft YaHei", size=10, color="27ae60"),
+                "部分可信": Font(name="Microsoft YaHei", size=10, color="e67e22"),
+                "低可信": Font(name="Microsoft YaHei", size=10, color="e74c3c"),
+            }
+            normal_font = Font(name="Microsoft YaHei", size=10)
+
+            for ri, item in enumerate(tree.get_children()):
+                vals = tree.item(item, "values")
+                tags = tree.item(item, "tags")
+                degraded = "degraded" in tags
+                row_fill = degrade_fill if degraded else (even_fill if ri % 2 == 0 else None)
+                cred_val = vals[1] if len(vals) > 1 else ""
+
+                for ci, val in enumerate(vals):
+                    cell = ws.cell(row=ri + 2, column=ci + 1, value=val)
+                    cell.border = thin_border
+                    cell.alignment = Alignment(horizontal="center" if ci in (0, 1, 3) else "left", vertical="center")
+                    if row_fill:
+                        cell.fill = row_fill
+                    if ci == 1 and cred_val in cred_fonts:
+                        cell.font = cred_fonts[cred_val]
+                    else:
+                        cell.font = normal_font
+
+            # 列宽
+            ws.column_dimensions["A"].width = 6
+            ws.column_dimensions["B"].width = 10
+            ws.column_dimensions["C"].width = 16
+            ws.column_dimensions["D"].width = 8
+            for i in range(max_cols):
+                col_letter = openpyxl.utils.get_column_letter(5 + i)
+                ws.column_dimensions[col_letter].width = 32
+
+            # 冻结表头
+            ws.freeze_panes = "A2"
+
+            wb.save(file)
+            messagebox.showinfo("提示", "已保存到：%s" % file)
+        except ImportError:
+            messagebox.showwarning("提示", "需要 openpyxl 库，请执行 pip install openpyxl")
 
     def _stop_generation(self):
         self._cancelled = True

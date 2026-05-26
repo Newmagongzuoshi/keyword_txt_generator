@@ -85,6 +85,8 @@ def run_generation(mp4_folder, keyword_file, keywords_text, required_keyword_fil
 
     results = []
     completed = 0
+    # 收集"提取地址 → 原始地址"的映射
+    region_origin_map = {}
 
     with ThreadPoolExecutor(max_workers=workers) as executor:
         futures = {}
@@ -104,6 +106,17 @@ def run_generation(mp4_folder, keyword_file, keywords_text, required_keyword_fil
                 result = future.result()
                 if result["success"]:
                     success_count += 1
+                    # 收集地址映射（含可信度信息）
+                    rr = result["region_result"]
+                    region_name = rr["name"]
+                    original = result["original_name"]
+                    if region_name not in region_origin_map:
+                        region_origin_map[region_name] = []
+                    region_origin_map[region_name].append({
+                        "original": original,
+                        "is_fallback": rr.get("is_fallback", False),
+                        "level_name": rr.get("level_name", ""),
+                    })
                 else:
                     fail_count += 1
                 results.append(result)
@@ -148,4 +161,5 @@ def run_generation(mp4_folder, keyword_file, keywords_text, required_keyword_fil
         "elapsed": elapsed,
         "speed": speed,
         "summary": summary,
+        "region_origin_map": region_origin_map,
     }

@@ -4,7 +4,7 @@ echo.
 
 cd /d "%~dp0"
 
-python -m PyInstaller --clean --onefile --windowed --name keyword_txt_generator --distpath "%USERPROFILE%\Desktop" --workpath "build_pyinstaller" --specpath "build_pyinstaller" --add-data "region_db.json;." main.py
+python -m PyInstaller --onefile --windowed --name keyword_txt_generator --icon "%~dp0app_icon.ico" --version-file "%~dp0version_info.txt" --distpath "%USERPROFILE%\Desktop" --workpath "build_pyinstaller" --specpath "build_pyinstaller" --add-data "region_db.json;." --add-data "app_icon.ico;." main.py
 
 if %ERRORLEVEL% EQU 0 (
     echo.
