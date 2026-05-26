@@ -23,7 +23,7 @@ VSVersionInfo(
         StringStruct(u'FileVersion', u'1.2.0'),
         StringStruct(u'InternalName', u'keyword_txt_generator'),
         StringStruct(u'LegalCopyright', u'Copyright (c) 2026'),
-        StringStruct(u'OriginalFilename', u'keyword_txt_generator.exe'),
+        StringStruct(u'OriginalFilename', u'关键词同名TXT生成工具v1.2.0.exe'),
         StringStruct(u'ProductName', u'关键词同名TXT生成工具'),
         StringStruct(u'ProductVersion', u'1.2.0')])
       ]),
