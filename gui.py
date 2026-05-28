@@ -5,6 +5,7 @@ from tkinter import ttk
 
 from txt_generator_page import TxtGeneratorPage
 from video_mover_page import VideoMoverPage
+from image_txt_page import ImageTxtPage
 
 
 def _resource_path(relative_path):
@@ -39,7 +40,7 @@ def set_app_icon(window, icon_rel_path="assets/app.ico"):
 class App:
     def __init__(self, extractor):
         self.root = tk.Tk()
-        self.root.title("关键词同名TXT生成工具 v1.2.0")
+        self.root.title("关键词同名TXT生成工具 v1.3.0")
         self.root.geometry("920x760")
         self.root.minsize(800, 600)
 
@@ -53,8 +54,10 @@ class App:
 
         self.txt_page = TxtGeneratorPage(self.notebook, self.extractor_ref)
         self.video_page = VideoMoverPage(self.notebook)
+        self.image_txt_page = ImageTxtPage(self.notebook, self.extractor_ref)
 
         self.notebook.add(self.txt_page, text="同名 TXT 生成")
+        self.notebook.add(self.image_txt_page, text="图文同名 TXT 生成")
         self.notebook.add(self.video_page, text="视频批量移动")
 
     def run(self):

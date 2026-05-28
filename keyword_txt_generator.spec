@@ -21,7 +21,7 @@ exe = EXE(
     a.binaries,
     a.datas,
     [],
-    name='关键词同名TXT生成工具v1.2.0',
+    name='关键词同名TXT生成工具v1.3.0',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,

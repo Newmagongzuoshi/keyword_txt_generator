@@ -36,6 +36,11 @@ VIDEO_EXTS = {
     ".ts", ".webm"
 }
 
+IMAGE_EXTS = {
+    ".jpg", ".jpeg", ".png", ".gif", ".bmp",
+    ".webp", ".tiff", ".tif", ".ico", ".svg",
+}
+
 INVALID_PREFIXES = [
     "中国",
     "全国",
