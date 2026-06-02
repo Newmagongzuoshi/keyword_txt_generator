@@ -1,4 +1,5 @@
 import re
+import random
 import shutil
 from pathlib import Path
 
@@ -96,7 +97,20 @@ def _resolve_name_conflicts(tasks, used_paths):
     return tasks
 
 
-def build_move_preview(root_dir, remove_text, folder_prefix="_文件夹", start_number=1):
+def _build_keyword_pool(keywords, total_needed):
+    """用关键词构建随机池，至少覆盖所需数量"""
+    if not keywords or total_needed == 0:
+        return []
+    pool = []
+    while len(pool) < total_needed:
+        batch = list(keywords)
+        random.shuffle(batch)
+        pool.extend(batch)
+    return pool[:total_needed]
+
+
+def build_move_preview(root_dir, remove_text, folder_prefix="_文件夹", start_number=1,
+                       suffix_keywords=None):
     tasks = []
     used_paths = set()
 
@@ -105,6 +119,15 @@ def build_move_preview(root_dir, remove_text, folder_prefix="_文件夹", start_
         [p for p in root_dir.iterdir() if p.is_dir()],
         key=natural_sort_key,
     )
+
+    # 预先统计视频总数，构建关键词池
+    total_videos = 0
+    for subfolder in subfolders:
+        videos = [p for p in subfolder.iterdir() if is_video_file(p)]
+        total_videos += len(videos)
+    kw_pool = _build_keyword_pool(suffix_keywords or [], total_videos)
+    kw_index = 0
+    used_combos = set()  # 用于关键词模式下主动避重
 
     for idx, subfolder in enumerate(subfolders):
         folder_index = start_number + idx
@@ -115,14 +138,32 @@ def build_move_preview(root_dir, remove_text, folder_prefix="_文件夹", start_
 
         for index, video_path in enumerate(videos, start=1):
             cleaned_stem = clean_stem(video_path.stem, remove_text)
-            target_stem = f"{index:04d}{cleaned_stem}{folder_suffix}"
-            target_path = root_dir / f"{target_stem}{video_path.suffix}"
-
-            target_path = get_unique_path(
-                target_path=target_path,
-                used_paths=used_paths,
-                source_path=video_path,
-            )
+            if kw_pool:
+                # 主动避重：尝试关键词直到找到未用过的组合
+                suffix = video_path.suffix
+                kw = None
+                for attempt in range(len(kw_pool)):
+                    candidate_kw = kw_pool[(kw_index + attempt) % len(kw_pool)]
+                    combo = f"{cleaned_stem}{candidate_kw}{suffix}".lower()
+                    if combo not in used_combos:
+                        kw = candidate_kw
+                        kw_index = (kw_index + attempt + 1) % len(kw_pool)
+                        break
+                if kw is None:
+                    kw = kw_pool[kw_index]
+                    kw_index += 1
+                target_stem = f"{cleaned_stem}{kw}"
+                target_path = root_dir / f"{target_stem}{suffix}"
+                # 直接注册路径，确保后续不重复；跳过 get_unique_path 的尾号逻辑
+                used_paths.add(str(target_path).lower())
+            else:
+                target_stem = f"{index:04d}{cleaned_stem}{folder_suffix}"
+                target_path = root_dir / f"{target_stem}{video_path.suffix}"
+                target_path = get_unique_path(
+                    target_path=target_path,
+                    used_paths=used_paths,
+                    source_path=video_path,
+                )
 
             tasks.append({
                 "mode": "move",
@@ -153,11 +194,13 @@ def build_move_preview(root_dir, remove_text, folder_prefix="_文件夹", start_
                     "source_folder": subfolder.name,
                 })
 
-    _resolve_name_conflicts(tasks, used_paths)
+    # 关键词模式下已在分配阶段主动避重，无需冲突检测
+    if not kw_pool:
+        _resolve_name_conflicts(tasks, used_paths)
     return tasks
 
 
-def build_rename_only_preview(root_dir, remove_text):
+def build_rename_only_preview(root_dir, remove_text, suffix_keywords=None):
     if not remove_text or not remove_text.strip():
         return []
 
@@ -174,19 +217,42 @@ def build_rename_only_preview(root_dir, remove_text):
     for subfolder in subfolders:
         all_videos.extend([p for p in subfolder.iterdir() if is_video_file(p)])
 
+    kw_pool = _build_keyword_pool(suffix_keywords or [], len(all_videos))
+    kw_index = 0
+    used_combos = set()
+
     for video_path in all_videos:
         cleaned_stem = clean_stem(video_path.stem, remove_text)
-        new_name = f"{cleaned_stem}{video_path.suffix}"
-        target_path = video_path.parent / new_name
-
-        if target_path.resolve() == video_path.resolve():
-            continue
-
-        target_path = get_unique_path(
-            target_path=target_path,
-            used_paths=used_paths,
-            source_path=video_path,
-        )
+        suffix = video_path.suffix
+        if kw_pool:
+            # 主动避重：尝试关键词直到找到未用过的组合
+            kw = None
+            for attempt in range(len(kw_pool)):
+                candidate_kw = kw_pool[(kw_index + attempt) % len(kw_pool)]
+                combo = f"{cleaned_stem}{candidate_kw}{suffix}".lower()
+                if combo not in used_combos:
+                    kw = candidate_kw
+                    kw_index = (kw_index + attempt + 1) % len(kw_pool)
+                    break
+            if kw is None:
+                kw = kw_pool[kw_index]
+                kw_index += 1
+            new_name = f"{cleaned_stem}{kw}{suffix}"
+            target_path = video_path.parent / new_name
+            used_combos.add(combo if kw else f"{cleaned_stem}{kw}{suffix}".lower())
+            used_paths.add(str(target_path).lower())
+            if target_path.resolve() == video_path.resolve():
+                continue
+        else:
+            new_name = f"{cleaned_stem}{suffix}"
+            target_path = video_path.parent / new_name
+            if target_path.resolve() == video_path.resolve():
+                continue
+            target_path = get_unique_path(
+                target_path=target_path,
+                used_paths=used_paths,
+                source_path=video_path,
+            )
 
         tasks.append({
             "mode": "rename",

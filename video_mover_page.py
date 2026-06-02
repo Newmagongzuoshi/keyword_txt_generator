@@ -43,6 +43,17 @@ class VideoMoverPage(ttk.Frame):
         ttk.Entry(row2, textvariable=self.remove_text, width=30).pack(side=tk.LEFT, padx=5)
         ttk.Label(row2, text="例如：_副本", foreground="gray").pack(side=tk.LEFT)
 
+        # 随机后缀关键词编辑框
+        row_suffix_kw = ttk.Frame(main)
+        row_suffix_kw.pack(fill=tk.X, pady=3)
+        ttk.Label(row_suffix_kw, text="随机后缀关键词\n（每行一个）：", width=18).pack(side=tk.LEFT, anchor=tk.N)
+        self.suffix_keywords_text = scrolledtext.ScrolledText(row_suffix_kw, height=4, width=40,
+                                                              highlightbackground="#8E44AD", highlightcolor="#8E44AD",
+                                                              highlightthickness=2)
+        self.suffix_keywords_text.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=5)
+        ttk.Label(row_suffix_kw, text="有内容时启用随机后缀模式，\n每个视频随机取一个作为文件名后缀",
+                  foreground="gray").pack(side=tk.LEFT)
+
         row3 = ttk.Frame(main)
         row3.pack(fill=tk.X, pady=3)
         ttk.Label(row3, text="文件夹后缀：", width=18).pack(side=tk.LEFT)
@@ -160,10 +171,28 @@ class VideoMoverPage(ttk.Frame):
         remove_text = self.remove_text.get().strip()
         folder_prefix = self.folder_prefix.get().strip() or "_文件夹"
         start_number = self._get_start_number()
+
+        # 读取随机后缀关键词
+        suffix_kw_text = self.suffix_keywords_text.get("1.0", tk.END)
+        suffix_keywords = [l.strip() for l in suffix_kw_text.splitlines() if l.strip()]
+
+        if suffix_keywords:
+            # 统计子文件夹数量
+            import os as _os
+            subfolder_count = sum(1 for p in _os.listdir(root_dir)
+                                  if _os.path.isdir(_os.path.join(root_dir, p)))
+            if len(suffix_keywords) < subfolder_count:
+                messagebox.showwarning(
+                    "关键词不足",
+                    f"随机后缀关键词数量（{len(suffix_keywords)}）必须 ≥ 子文件夹数量（{subfolder_count}）"
+                )
+                return
+            self._log(f"已启用随机后缀模式，关键词数：{len(suffix_keywords)}，子文件夹数：{subfolder_count}")
+
         self._log("正在扫描子文件夹并生成移动预览...")
 
         try:
-            tasks = build_move_preview(root_dir, remove_text, folder_prefix, start_number)
+            tasks = build_move_preview(root_dir, remove_text, folder_prefix, start_number, suffix_keywords)
         except Exception as e:
             self._log(f"生成预览失败：{e}")
             return
@@ -204,10 +233,14 @@ class VideoMoverPage(ttk.Frame):
             messagebox.showwarning("提示", "请先填写要删除的文件名内容")
             return
 
+        # 读取随机后缀关键词
+        suffix_kw_text = self.suffix_keywords_text.get("1.0", tk.END)
+        suffix_keywords = [l.strip() for l in suffix_kw_text.splitlines() if l.strip()]
+
         self._log("正在扫描视频并生成仅重命名预览...")
 
         try:
-            tasks = build_rename_only_preview(root_dir, remove_text)
+            tasks = build_rename_only_preview(root_dir, remove_text, suffix_keywords)
         except Exception as e:
             self._log(f"生成预览失败：{e}")
             return

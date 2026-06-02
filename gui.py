@@ -40,7 +40,7 @@ def set_app_icon(window, icon_rel_path="assets/app.ico"):
 class App:
     def __init__(self, extractor):
         self.root = tk.Tk()
-        self.root.title("关键词同名TXT生成工具 v1.3.0")
+        self.root.title("关键词同名TXT生成工具 v1.4.0")
         self.root.geometry("920x760")
         self.root.minsize(800, 600)
 
