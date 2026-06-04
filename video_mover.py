@@ -120,11 +120,16 @@ def build_move_preview(root_dir, remove_text, folder_prefix="_文件夹", start_
         key=natural_sort_key,
     )
 
-    # 预先统计视频总数，构建关键词池
+    # 预先统计视频总数（≥5取直接，<5优先"生成的视频"）
     total_videos = 0
     for subfolder in subfolders:
-        videos = [p for p in subfolder.iterdir() if is_video_file(p)]
-        total_videos += len(videos)
+        direct_count = len([p for p in subfolder.iterdir() if is_video_file(p)])
+        if direct_count >= 5:
+            total_videos += direct_count
+        else:
+            generated_dir = subfolder / "生成的视频"
+            generated_videos = [p for p in generated_dir.iterdir() if is_video_file(p)] if generated_dir.is_dir() else []
+            total_videos += len(generated_videos) if generated_videos else direct_count
     kw_pool = _build_keyword_pool(suffix_keywords or [], total_videos)
     kw_index = 0
     used_combos = set()  # 用于关键词模式下主动避重
@@ -133,7 +138,14 @@ def build_move_preview(root_dir, remove_text, folder_prefix="_文件夹", start_
         folder_index = start_number + idx
         folder_suffix = get_folder_suffix(folder_index, folder_prefix)
 
-        videos = [p for p in subfolder.iterdir() if is_video_file(p)]
+        # 子文件夹直接视频 ≥5 则用直接视频；否则检查"生成的视频"
+        direct_videos = [p for p in subfolder.iterdir() if is_video_file(p)]
+        if len(direct_videos) >= 5:
+            videos = direct_videos
+        else:
+            generated_dir = subfolder / "生成的视频"
+            generated_videos = [p for p in generated_dir.iterdir() if is_video_file(p)] if generated_dir.is_dir() else []
+            videos = generated_videos if generated_videos else direct_videos
         videos.sort(key=lambda x: (get_create_time(x), x.name.lower()))
 
         for index, video_path in enumerate(videos, start=1):
