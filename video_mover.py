@@ -1,6 +1,8 @@
+import ctypes
 import re
 import random
 import shutil
+from datetime import datetime
 from pathlib import Path
 
 from config import VIDEO_EXTS
@@ -187,24 +189,6 @@ def build_move_preview(root_dir, remove_text, folder_prefix="_文件夹", start_
                 "source_folder": subfolder.name,
             })
 
-        if videos:
-            new_folder_name = f"{subfolder.name}{folder_suffix}"
-            folder_target = root_dir / new_folder_name
-            if folder_target.resolve() != subfolder.resolve():
-                folder_target = get_unique_path(
-                    target_path=folder_target,
-                    used_paths=used_paths,
-                    source_path=subfolder,
-                )
-                tasks.append({
-                    "mode": "rename_folder",
-                    "operation": "重命名文件夹",
-                    "source": subfolder,
-                    "target": folder_target,
-                    "folder_index": folder_index,
-                    "folder_suffix": folder_suffix,
-                    "source_folder": subfolder.name,
-                })
 
     # 关键词模式下已在分配阶段主动避重，无需冲突检测
     if not kw_pool:
@@ -279,12 +263,15 @@ def build_rename_only_preview(root_dir, remove_text, suffix_keywords=None):
     return tasks
 
 
-def execute_tasks(tasks):
+def execute_tasks(tasks, root_dir=None, progress_callback=None):
     success_count = 0
     fail_count = 0
     logs = []
+    success_lines = []
+    fail_lines = []
+    total = len(tasks)
 
-    for task in tasks:
+    for idx, task in enumerate(tasks):
         source = task["source"]
         target = task["target"]
         try:
@@ -295,21 +282,159 @@ def execute_tasks(tasks):
             else:
                 source.rename(target)
             success_count += 1
+            success_lines.append((str(source), str(target)))
             logs.append({
                 "success": True,
                 "message": f"完成：{source.name} -> {target.name}",
             })
         except Exception as e:
             fail_count += 1
+            fail_lines.append((str(source), str(target), str(e)))
             logs.append({
                 "success": False,
                 "message": f"失败：{source.name} -> {target.name}",
                 "reason": str(e),
             })
+        # 每 10 个或最后一个时回调进度
+        if progress_callback and ((idx + 1) % 10 == 0 or idx + 1 == total):
+            progress_callback(idx + 1, total)
+
+    # 一次性写入 .log 隐藏文件
+    log_path = None
+    if root_dir:
+        root = Path(root_dir)
+        log_path = root / "移动日志.log"
+        now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        lines = [f"# 移动日志 - {now}"]
+        for src, dst in success_lines:
+            try:
+                lines.append(f"{Path(src).relative_to(root)}\t->\t{Path(dst).relative_to(root)}")
+            except ValueError:
+                lines.append(f"{src}\t->\t{dst}")
+        for src, dst, reason in fail_lines:
+            try:
+                lines.append(f"[失败] {Path(src).relative_to(root)}\t->\t{Path(dst).relative_to(root)}\t原因：{reason}")
+            except ValueError:
+                lines.append(f"[失败] {src}\t->\t{dst}\t原因：{reason}")
+        log_path.write_text("\n".join(lines), encoding="utf-8")
+        try:
+            ctypes.windll.kernel32.SetFileAttributesW(str(log_path), 0x2)
+        except Exception:
+            pass
+
+        # 用户可读 .txt
+        if success_lines:
+            tlines = [f"# 移动日志 - {now}"]
+            for src, dst in success_lines:
+                try:
+                    tlines.append(f"{Path(src).relative_to(root)}\t->\t{Path(dst).relative_to(root)}")
+                except ValueError:
+                    tlines.append(f"{src}\t->\t{dst}")
+            (root / "移动日志.txt").write_text("\n".join(tlines), encoding="utf-8")
+        if fail_lines:
+            flines = [f"# 移动失败日志 - {now}"]
+            for src, dst, reason in fail_lines:
+                try:
+                    flines.append(f"{Path(src).relative_to(root)}\t->\t{Path(dst).relative_to(root)}\t原因：{reason}")
+                except ValueError:
+                    flines.append(f"{src}\t->\t{dst}\t原因：{reason}")
+            (root / "移动失败日志.txt").write_text("\n".join(flines), encoding="utf-8")
 
     return {
         "success_count": success_count,
         "fail_count": fail_count,
         "total": len(tasks),
         "logs": logs,
+        "log_path": str(log_path) if log_path else None,
     }
+
+
+def restore_from_log(log_path, root_dir=None):
+    """根据移动日志还原文件到原始位置。返回 (success, fail, logs, restore_log_path)"""
+    path = Path(log_path)
+    if not path.is_file():
+        return 0, 0, [{"success": False, "message": f"日志文件不存在：{log_path}"}], None
+
+    content = path.read_text(encoding="utf-8")
+    records = []
+    for line in content.splitlines():
+        line = line.strip()
+        if not line or line.startswith("#") or line.startswith("[失败]"):
+            continue
+        parts = line.split("\t->\t")
+        if len(parts) == 2:
+            records.append((parts[0], parts[1]))
+
+    if not records:
+        return 0, 0, [{"success": False, "message": "日志中没有可还原的记录"}], None
+
+    root = Path(root_dir) if root_dir else Path(log_path).parent
+    success = 0
+    fail = 0
+    logs = []
+    restore_records = []
+    for src, dst in records:
+        src_path = root / src if not Path(src).is_absolute() else Path(src)
+        dst_path = root / dst if not Path(dst).is_absolute() else Path(dst)
+        try:
+            if dst_path.exists():
+                dst_path.parent.mkdir(parents=True, exist_ok=True)
+                shutil.move(str(dst_path), str(src_path))
+                success += 1
+                restore_records.append((str(dst_path), str(src_path)))
+                logs.append({
+                    "success": True,
+                    "message": f"还原：{dst_path.name} -> {src_path.name}",
+                })
+            else:
+                fail += 1
+                logs.append({
+                    "success": False,
+                    "message": f"文件不存在，跳过：{dst_path.name}",
+                    "reason": "目标文件已不存在",
+                })
+        except Exception as e:
+            fail += 1
+            logs.append({
+                "success": False,
+                "message": f"还原失败：{dst_path.name}",
+                "reason": str(e),
+            })
+
+    # 删除旧 .log，一次性写入新 .log（反映还原后的状态）
+    try:
+        path.unlink()
+    except Exception:
+        pass
+
+    new_log_path = None
+    restore_txt_path = None
+    if root_dir and restore_records:
+        root = Path(root_dir)
+        now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+        # .log 隐藏文件
+        new_log_path = root / "移动日志.log"
+        log_lines = [f"# 移动日志 - {now}"]
+        for dst, src in restore_records:
+            try:
+                log_lines.append(f"{Path(dst).relative_to(root)}\t->\t{Path(src).relative_to(root)}")
+            except ValueError:
+                log_lines.append(f"{dst}\t->\t{src}")
+        new_log_path.write_text("\n".join(log_lines), encoding="utf-8")
+        try:
+            ctypes.windll.kernel32.SetFileAttributesW(str(new_log_path), 0x2)
+        except Exception:
+            pass
+
+        # 用户可读 .txt
+        restore_txt_path = root / "撤销移动日志.txt"
+        txt_lines = [f"# 撤销移动日志 - {now}"]
+        for dst, src in restore_records:
+            try:
+                txt_lines.append(f"{Path(dst).relative_to(root)}\t->\t{Path(src).relative_to(root)}")
+            except ValueError:
+                txt_lines.append(f"{dst}\t->\t{src}")
+        restore_txt_path.write_text("\n".join(txt_lines), encoding="utf-8")
+
+    return success, fail, logs, str(restore_txt_path) if restore_txt_path else None

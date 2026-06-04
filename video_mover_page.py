@@ -1,4 +1,5 @@
 import os
+import queue
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox, scrolledtext
 import threading
@@ -7,6 +8,7 @@ from video_mover import (
     build_move_preview,
     build_rename_only_preview,
     execute_tasks,
+    restore_from_log,
 )
 
 
@@ -75,6 +77,8 @@ class VideoMoverPage(ttk.Frame):
                    command=self._confirm_execute).pack(side=tk.LEFT, padx=3)
         ttk.Button(btn_row, text="清空预览",
                    command=self._clear_preview).pack(side=tk.LEFT, padx=3)
+        ttk.Button(btn_row, text="还原移动",
+                   command=self._restore_move).pack(side=tk.LEFT, padx=3)
 
         columns = ("操作", "来源文件夹序号", "文件夹标识", "原文件", "目标文件")
         self.tree = ttk.Treeview(main, columns=columns, show="headings", height=12)
@@ -283,34 +287,99 @@ class VideoMoverPage(ttk.Frame):
             self._log("用户取消执行。")
             return
 
+        root_dir = self.root_folder.get().strip()
+
         self._log("正在执行...")
+        msg_queue = queue.Queue()
 
         def run():
             try:
-                result = execute_tasks(self.preview_tasks)
-                for log_entry in result["logs"]:
-                    if log_entry["success"]:
-                        self.after(0, lambda m=log_entry["message"]: self._log(m))
-                    else:
-                        self.after(0, lambda m=log_entry["message"]: self._log(m))
-                        self.after(0, lambda r=log_entry.get("reason", ""): self._log(f"原因：{r}"))
-                summary = (
-                    f"执行完成\n"
-                    f"成功数量：{result['success_count']}\n"
-                    f"失败数量：{result['fail_count']}\n"
-                    f"总数：{result['total']}"
-                )
-                self.after(0, lambda: self._log(""))
-                self.after(0, lambda s=summary: self._log(s))
-                self.after(0, lambda: messagebox.showinfo(
-                    "完成",
-                    f"执行完成\n\n成功：{result['success_count']}\n失败：{result['fail_count']}"
-                ))
-                self.after(0, self._clear_preview)
+                def _progress(current, total):
+                    msg_queue.put(("progress", f"已处理：{current}/{total}"))
+
+                result = execute_tasks(self.preview_tasks, root_dir=root_dir,
+                                       progress_callback=_progress)
+                msg_queue.put(("result", result))
             except Exception as e:
-                self.after(0, lambda: self._log(f"执行异常：{e}"))
+                msg_queue.put(("error", str(e)))
 
         threading.Thread(target=run, daemon=True).start()
+
+        def _poll():
+            try:
+                while True:
+                    kind, data = msg_queue.get_nowait()
+                    if kind == "progress":
+                        self._log(data)
+                    elif kind == "error":
+                        self._log(f"执行异常：{data}")
+                        return
+                    elif kind == "result":
+                        result = data
+                        lines = []
+                        for entry in result["logs"]:
+                            lines.append(entry["message"])
+                            if not entry["success"] and entry.get("reason"):
+                                lines.append(f"原因：{entry['reason']}")
+                        for line in lines:
+                            self._log(line)
+                        self._log("")
+                        summary = f"执行完成\n成功数量：{result['success_count']}\n失败数量：{result['fail_count']}\n总数：{result['total']}"
+                        self._log(summary)
+                        messagebox.showinfo("完成", f"执行完成\n\n成功：{result['success_count']}\n失败：{result['fail_count']}")
+                        self._clear_preview()
+                        return
+            except queue.Empty:
+                pass
+            self.after(100, _poll)
+
+        self.after(100, _poll)
+
+    def _restore_move(self):
+        root_dir = self.root_folder.get().strip()
+        if not root_dir or not os.path.isdir(root_dir):
+            messagebox.showwarning("提示", "请先选择有效的总文件夹")
+            return
+
+        log_path = os.path.join(root_dir, "移动日志.log")
+        if not os.path.isfile(log_path):
+            messagebox.showwarning("提示", "未找到移动日志.log，无法还原")
+            return
+
+        if not messagebox.askyesno("确认还原", f"即将根据移动日志还原文件：\n{log_path}\n\n是否继续？"):
+            return
+
+        self._log("正在还原移动...")
+        msg_queue = queue.Queue()
+
+        def run():
+            success, fail, logs, restore_log = restore_from_log(log_path, root_dir=root_dir)
+            msg_queue.put(("result", (success, fail, logs, restore_log)))
+
+        threading.Thread(target=run, daemon=True).start()
+
+        def _poll():
+            try:
+                while True:
+                    kind, data = msg_queue.get_nowait()
+                    if kind == "result":
+                        success, fail, logs, restore_log = data
+                        for entry in logs:
+                            msg = entry["message"] if entry["success"] else f"还原{entry['message']}"
+                            self._log(msg)
+                            if not entry["success"] and entry.get("reason"):
+                                self._log(f"原因：{entry['reason']}")
+                        summary = f"还原完成\n成功：{success}\n失败：{fail}"
+                        if restore_log:
+                            summary += f"\n已生成：{restore_log}"
+                        self._log(summary)
+                        messagebox.showinfo("还原完成", summary)
+                        return
+            except queue.Empty:
+                pass
+            self.after(100, _poll)
+
+        self.after(100, _poll)
 
     def _clear_preview(self):
         self.preview_tasks = []

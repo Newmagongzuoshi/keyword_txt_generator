@@ -31,7 +31,7 @@ class TxtGeneratorPage(ttk.Frame):
         main = ttk.Frame(self, padding=10)
         main.pack(fill=tk.BOTH, expand=True)
 
-        title = ttk.Label(main, text="关键词同名 TXT 生成工具 v1.4.1",
+        title = ttk.Label(main, text="关键词同名 TXT 生成工具 v1.4.2",
                           font=("Microsoft YaHei", 16, "bold"))
         title.pack(pady=(0, 10))
 
